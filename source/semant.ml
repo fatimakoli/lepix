@@ -188,16 +188,22 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 	if env.in_function_body then
 		raise (SemanticException("Nested function declaration"))
 	else
-		let f_env = { env with scope = {parent_scope = Some(env.scope); vars = [];};
-		return_type = fdecl.func_return_type; in_function_body = true} 
-		in
-		ignore(List.map (fun (name,typ) -> (typ,name)::f_env.scope.vars) fdecl.func_parameters);
+		let f_env = { env with scope = {parent_scope = Some(env.scope); 
+						vars = List.map (fun (name,typ) -> (typ,name)) fdecl.func_parameters;};
+						return_type = fdecl.func_return_type; in_function_body = true} 
+		in	
 		if (fdecl.func_return_type = Void || 
 			List.exists (fun x -> match x with Return(e) -> true | _ -> false) fdecl.func_body) 
-		then {Semast.func_name = fdecl.func_name; 
+		then let sfdecl =  {Semast.func_name = fdecl.func_name; 
 						Semast.func_return_type = fdecl.func_return_type;
 						Semast.func_parameters = fdecl.func_parameters; 
 						Semast.func_body = (List.map (fun s -> check_stmt s f_env) fdecl.func_body);}
+		     in (
+			if List.exists (fun f -> sfdecl.func_name = f.func_name 
+						&& list_compare sfdecl.func_parameters f.func_parameters) env.funcs
+			then raise(SemanticException("Redefining function " ^ fdecl.func_name))
+			else env.funcs <- sfdecl::env.funcs; sfdecl
+			)
 		else raise(SemanticException("No return stmt in func def" ^ fdecl.func_name))
 
 let create_environment =
@@ -221,4 +227,7 @@ let check_decl env decl =
 
 let check_prog prog =
         let env = create_environment in
-        S_Prog(List.map (check_decl env) prog)
+        let sprog = S_Prog(List.map (check_decl env) prog) in
+	if List.exists (fun f -> f.func_name = "main" && f.func_return_type = Int) env.funcs 
+	then sprog
+	else raise(SemanticException("Main function not defined"))
