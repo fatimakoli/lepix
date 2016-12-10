@@ -52,6 +52,7 @@ expr:
 | FLOATLITERAL { FloatLit($1) }
 | TRUE { BoolLit(true) }
 | FALSE { BoolLit(false) }
+| ID { Id($1) }
 | LSQUARE args_list RSQUARE { ArrayLit($2) }
 | ID LSQUARE args_list RSQUARE { Access($1,$3)  }
 | ID LPAREN args_list RPAREN  { Call($1,$3)  }
@@ -79,7 +80,7 @@ params_list: { [] }
 | ID COLON type_name COMMA params_list { ($1,$3)::$5 }
 
 var_decl:
-| VAR binding ASSIGN expr SEMI { VarDecl($2,$4) }
+| VAR ID COLON type_name ASSIGN expr SEMI { VarDecl(($2,$4),$6) }
 
 fun_decl:
 FUN ID LPAREN params_list RPAREN COLON type_name LBRACE statement_list RBRACE { { func_name=$2; func_parameters=$4; func_return_type=$7; func_body=$9} }
