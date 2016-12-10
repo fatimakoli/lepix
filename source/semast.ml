@@ -1,74 +1,58 @@
-(* LePiX Language Compiler Implementation
-Copyright (c) 2016- ThePhD, Gabrielle Taylor, Akshaan Kakar, Fatimazorha Koly, Jackie Lin
+open Ast
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this 
-software and associated documentation files (the "Software"), to deal in the Software 
-without restriction, including without limitation the rights to use, copy, modify, 
-merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
-permit persons to whom the Software is furnished to do so, subject to the following 
-conditions:
+type s_expr = 
+|  	S_IntLit of int
+|	S_BoolLit of bool
+|	S_FloatLit of float
+|	S_Id of string * typ
+|	S_Call of string * s_expr list * typ
+|	S_Access of string * s_expr list * typ
+|	S_Binop of s_expr * op * s_expr * typ
+|	S_Unop of uop * s_expr * typ
+|	S_Assign of string * s_expr * typ
+|	S_ArrayAssign of string * s_expr list * s_expr * typ
+|	S_ArrayLit of s_expr list * typ
+|	S_InitArray of string * s_expr list * typ
+|	S_Noexpr
 
-The above copyright notice and this permission notice shall be included in all copies 
-or substantial portions of the Software.
+type s_var_decl
+	= S_VarDecl of bind * s_expr
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. *)
+type s_stmt = 
+|	S_Expr of s_expr * typ
+|	S_Return of s_expr * typ
+| 	S_If of s_expr * s_stmt * s_stmt
+|	S_For of s_expr * s_expr * s_expr * s_stmt
+|	S_While of s_expr * s_stmt
+| 	S_Break
+|	S_Continue
+|	S_VarDecStmt of s_var_decl
+|	S_Block of s_stmt list 
 
-(* Semantic checking for the Lepix compiler that will produce a new 
-SemanticProgram type with things like locals group into a single type 
-and type promotions / conversions organized for operators. *)
+type s_func_decl = {
+	func_name : string;
+	func_parameters : bind list;
+	func_return_type : typ;
+	func_body : s_stmt list;	
+}
 
-module StringMap = Map.Make(String)
+type s_decl = 
+|	S_Func of s_func_decl
+|	S_Var of s_var_decl
 
-type symbol_table = ( Ast.type_name * bool ) StringMap.t
 
-type s_expression = 
-	| SExpression of Ast.type_name * Ast.expression
+type s_program = 	
+	S_Prog of s_decl list	
 
-type s_locals =
-	| SLocals of Ast.binding list
 
-type s_block =
-	| SBlock of s_locals * Ast.statement list
+type symbolTable = {
+	parent_scope: symbolTable option;
+	mutable vars: (typ * string) list;
+}
 
-type s_parameters =
-	| SParameters of Ast.binding list
-
-type s_general_statement =
-	| SExpressionStatement of s_expression
-	| SVariableStatement of Ast.variable_definition
-
-type s_capture =
-	| ParallelCapture of Ast.binding list
-
-type s_statement =
-	| SGeneral of s_general_statement
-	| SReturn of s_expression
-	| SBreak of int
-	| SContinue
-	| SParallelBlock of Ast.parallel_expression list * s_capture * s_block
-	| SAtomicBlock of s_block
-	| SIfBlock of s_block * s_expression * s_block
-	| SIfElseBlock of s_block * s_expression * s_block * s_block
-	| SWhileBlock of s_block * s_expression * s_block
-	| SForBlock of s_block * s_expression * s_block * s_statement list
-
-type s_function_definition = Ast.qualified_id * s_parameters
-	* Ast.type_name * s_block
-
-type s_basic_definition = 	
-	| SVariableDefinition of Ast.variable_definition
-	| SFunctionDefinition of s_function_definition
-
-type s_struct_definition = Ast.struct_type * s_basic_definition list
-
-type s_definition = 
-	| SBasic of s_basic_definition
-	| SStructure of s_struct_definition * symbol_table
-	| SNamespace of Ast.qualified_id * s_definition list
-
-type s_program = symbol_table * s_definition list
+type env = {
+	mutable funcs: s_func_decl list;
+	scope: symbolTable;
+	return_type : typ;
+	in_function_body : bool;
+}

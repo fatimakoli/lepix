@@ -1,131 +1,157 @@
-(* LePiX Language Compiler Implementation
-Copyright (c) 2016- ThePhD, Gabrielle Taylor, Akshaan Kakar, Fatimazorha Koly, Jackie Lin
+(* Abstract Syntax Tree*)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this 
-software and associated documentation files (the "Software"), to deal in the Software 
-without restriction, including without limitation the rights to use, copy, modify, 
-merge, publish, distribute, sublicense, and/or sell copies of the Software, and to 
-permit persons to whom the Software is furnished to do so, subject to the following 
-conditions:
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq 
+    | And | Or
 
-The above copyright notice and this permission notice shall be included in all copies 
-or substantial portions of the Software.
+type uop = Neg | Not
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. *)
+type typ = 
+	| Int 
+	| Bool 
+	| Void 
+	| Float 
+	| Array of typ * int
 
-(* Types and routines for the abstract syntax tree and 
-representation of a LePiX program. *)
+type bind = string * typ
 
-type id = string
-
-type qualified_id = id list
-
-type struct_type = 
-	qualified_id (* Name *)
-
-type builtin_type =
-	| Auto
-	| Void
-	| Bool
-	| Int of int
-	| Float of int
-	| String
-
-type constness = bool
-type referenceness = bool
-
-type type_qualifier = constness * referenceness
-
-let no_qualifiers = (false, false)
-
-type type_name =
-	| BuiltinType of builtin_type * type_qualifier
-	| StructType of struct_type * type_qualifier
-	| Array of type_name * int * type_qualifier
-	| Function of type_name * type_name list * type_qualifier
-
-type binding = id * type_name
-
-type binary_op = Add | Sub | Mult | Div | Modulo
-	| AddAssign | SubAssign | MultAssign | DivAssign | ModuloAssign
-	| Equal | Neq | Less | Leq | Greater | Geq 
-	| And | Or 
-
-type prefix_op = 
-	| Neg | Not | PreIncrement | PreDecrement
-
-type literal =
+type expr =
 	| BoolLit of bool
 	| IntLit of int
 	| FloatLit of float
-	| StringLit of string
+	| Id of string
+	| Call of string * expr list
+	| Access of string * expr list 
+	| Binop of expr * op * expr
+	| Unop of uop * expr 
+	| Assign of string * expr   
+	| ArrayAssign of string * expr list * expr 
+	| InitArray of string * expr list 
+	| ArrayLit of expr list
+	| Noexpr
 
-type expression =
-	| Literal of literal
-	| Id of id
-	| Member of expression * qualified_id
-	| Call of expression * expression list
-	| Index of expression * expression list
-	| Initializer of expression list
-	| BinaryOp of expression * binary_op * expression
-	| PrefixUnaryOp of prefix_op * expression
-	| Assignment of expression * expression
-	| NoOp
+type var_decl = 
+	| VarDecl of bind * expr
 
-type parallel_expression =
-	| Invocations of expression
-	| ThreadCount of expression
-
-type variable_definition = 
-	| VarBinding of binding * expression
-	| LetBinding of binding * expression
-
-type general_statement =
-	| ExpressionStatement of expression
-	| VariableStatement of variable_definition
-
-type control_initializer = general_statement list * general_statement
-
-type statement = 
-	| General of general_statement
-	| Return of expression
-	| Break of int
+type stmt =
+	| Expr of expr
+	| Return of expr
+	| If of expr * stmt * stmt
+	| For of expr * expr * expr * stmt
+	| While of expr * stmt 
+	| Break
 	| Continue
-	| ParallelBlock of parallel_expression list * statement list
-	| AtomicBlock of statement list
-	| IfBlock of control_initializer * statement list
-	| IfElseBlock of control_initializer * statement list * statement list
-	| WhileBlock of control_initializer * statement list
-	| ForBlock of general_statement list * expression * expression list * statement list
-	| ForByToBlock of expression * expression * expression * statement list
+	| VarDecStmt of var_decl
+	| Block of stmt list
 
-type function_definition = 
-	qualified_id (* Name *)
-	* binding list (* Parameters *)
-	* type_name (* Return Type *)
-	* statement list (* Body *)
+type func_decl = {
+	func_name : string;
+	func_parameters : bind list;
+	func_return_type : typ;
+	func_body : stmt list; 
+}
 
-type basic_definition = 	
-	| VariableDefinition of variable_definition
-	| FunctionDefinition of function_definition
+type decl =
+	| Func of func_decl
+	| Var of var_decl
 
-type struct_definition = struct_type * basic_definition list
+type prog = decl list
 
-type definition = 
-	| Basic of basic_definition
-	| Structure of struct_definition
-	| Namespace of qualified_id * definition list
+(* Pretty-printing functions *)
 
-type program = definition list
+let string_of_op = function
+	| Add -> "+"
+	| Sub -> "-"
+	| Mult -> "*"
+	| Div -> "/"
+	| Equal -> "=="
+	| Neq -> "!="
+	| Less -> "<"
+	| Leq -> "<="
+	| Greater -> ">"
+	| Geq -> ">="
+	| And -> "&&"
+	| Or -> "||"
 
-(* Useful destructuring and common operations *)
-let binding_type = function
-	| (_, qt) -> qt
+let rec string_of_list = function
+	| [] -> ""
+	| s::l -> s ^ "," ^ string_of_list l
 
-let binding_name = function
-	| (n, _) -> n
+let string_of_uop = function
+	| Neg -> "-"
+	| Not -> "!"
+
+let rec string_of_expr = function
+	| IntLit(l) -> string_of_int l
+	| BoolLit(true) -> "true"
+	| BoolLit(false) -> "false"
+	| FloatLit(f) -> string_of_float f
+	| Id(sl) -> sl
+	| Binop(e1, o, e2) ->
+		string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+	| Unop(o, e) -> string_of_uop o ^ string_of_expr e
+	| Access(e, l) -> e ^ "[" ^ string_of_list (List.map string_of_expr l) ^ "]"
+	| ArrayAssign (s, l, e) -> s ^"[" ^ string_of_expr_list l ^ "] = " ^ string_of_expr e	
+	| Assign(v, e) -> v ^ " = " ^ string_of_expr e
+	| InitArray(s, el) -> s ^ " = [" ^ String.concat ", " (List.map string_of_expr el) ^ "]"
+	| Call(e, el) ->
+		e ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+	| Noexpr -> "{ Noop }"
+	| ArrayLit(el) -> "[ " ^ String.concat ", " (List.map string_of_expr el) ^ " ]"
+
+and string_of_expr_list = function
+	| [] -> ""
+	| s::l -> string_of_expr s ^ "," ^ string_of_expr_list l
+
+let rec string_of_typ = function
+	| Int -> "int"
+	| Bool -> "bool"
+	| Void -> "void"
+	| Float -> "float"
+	| Array(t, d) -> string_of_typ t ^ ( String.make d '[' ) ^ ( String.make d ']' )
+
+let rec string_of_bind = function
+	| (str, typ) -> str ^ " : " ^ string_of_typ typ
+
+let rec string_of_bind_list = function
+	| [] -> ""
+	| hd::[] -> string_of_bind hd
+	| hd::tl -> string_of_bind hd ^ string_of_bind_list tl
+
+let rec string_of_var_decl = function
+	| VarDecl(binding,expr) -> "var " ^ string_of_bind binding ^ " = " ^ string_of_expr expr ^ ";\n"
+
+let rec string_of_stmt_list = function
+	| [] -> ""
+	| hd::[] -> string_of_stmt hd
+	| hd::tl -> string_of_stmt hd ^ ";\n" ^ string_of_stmt_list tl ^ "\n"
+	and string_of_stmt = function
+		| Block(sl) -> string_of_stmt_list sl
+		| Expr(expr) -> string_of_expr expr ^ ";\n"; 
+		| Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";	
+		| If(e, s, s2) -> "if (" ^ string_of_expr e ^ ")\n" ^"{" ^  string_of_stmt s ^ "}\n" ^ "else\n{" ^ string_of_stmt s2 ^"\n}"
+		| For(e1, e2, e3, s) -> "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^ string_of_expr e3  ^ ")\n{ " ^ string_of_stmt s ^ "}"
+		| While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+		| Break -> "break;\n"
+		| Continue -> "continue;\n"
+		| VarDecStmt(vdecl) -> string_of_var_decl vdecl
+(*		| Parallel(el,sl) -> "parallel( invocations = " ^ string_of_expr_list el ^ " )\n{\n" ^ string_of_stmt_list sl ^ "\n}\n" 
+		| Atomic(sl) -> "atomic {\n" ^ string_of_stmt_list sl ^ "}\n"
+*)
+let string_of_func_decl fdecl =
+	"fun " ^  fdecl.func_name 
+    ^ "(" ^ string_of_bind_list fdecl.func_parameters ^ ") :" 
+    ^ string_of_typ fdecl.func_return_type  ^ "{\n" 
+    ^ string_of_stmt_list fdecl.func_body 
+    ^ "}"
+
+let string_of_decl = function
+	| Func(fdecl) -> string_of_func_decl fdecl
+	| Var(vdecl) -> string_of_var_decl vdecl
+
+let rec string_of_decls_list = function
+	| [] -> ""
+	| hd::[] -> string_of_decl hd
+	| hd::tl -> string_of_decl hd ^ string_of_decls_list tl
+
+let string_of_program p = 
+	string_of_decls_list p
