@@ -45,19 +45,15 @@ rule token = parse
 | "false"  { FALSE }
 | "var"    { VAR }
 | "fun"	    { FUN }
-| "parallel" { PARALLEL }
 | "break" { BREAK }
 | "continue" { CONTINUE }
-| "invocations" { INVOCATIONS }
-| "thread_count" { THREADCOUNT }
-| "atomic" { ATOMIC }
-| "namespace" { NAMESPACE }
 | ['0'-'9']+ as lxm { INTLITERAL(int_of_string lxm) }
 | '.' ['0'-'9']+ ('e' ('+'|'-')? ['0'-'9']+)? as lxm { FLOATLITERAL(float_of_string lxm) }
 | ['0'-'9']+ ( '.' ['0'-'9']* ('e' ('+'|'-')? ['0'-'9']+)? | ('e' ('+'|'-')? ['0'-'9']+)?) as lxm { FLOATLITERAL(float_of_string lxm) } 
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
+
 | eof { EOF }
-| _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
+
 
 and mcomment level = parse
   "*/" { if level = 0 then token lexbuf else mcomment (level-1) lexbuf }

@@ -58,7 +58,12 @@ and check_binop l op r env =
 	sexpr_r = check_expr r env in 
 	let ltyp = get_expr_type sexpr_l and
 	rtyp = get_expr_type sexpr_r in
-	if ltyp = rtyp then S_Binop(sexpr_l,op,sexpr_r,ltyp)
+	if ltyp = rtyp then 
+		match op with Add -> S_Binop(sexpr_l,op,sexpr_r,ltyp)
+			    | Sub -> S_Binop(sexpr_l,op,sexpr_r,ltyp)
+			    | Mult -> S_Binop(sexpr_l,op,sexpr_r,ltyp)
+			    | Div -> S_Binop(sexpr_l,op,sexpr_r,ltyp)
+			    | _ -> S_Binop(sexpr_l,op,sexpr_r,Bool)
 	else  raise (SemanticException("Incompatible types"))
 and check_unop op e env = 
 	let sexp = check_expr e env in
@@ -197,7 +202,8 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 		then let sfdecl =  {Semast.func_name = fdecl.func_name; 
 						Semast.func_return_type = fdecl.func_return_type;
 						Semast.func_parameters = fdecl.func_parameters; 
-						Semast.func_body = (List.map (fun s -> check_stmt s f_env) fdecl.func_body);}
+						Semast.func_body = (List.map (fun s -> check_stmt s f_env) fdecl.func_body);
+						Semast.func_locals = List.map (fun (a,b) -> (b,a)) f_env.scope.vars;}
 		     in (
 			if List.exists (fun f -> sfdecl.func_name = f.func_name 
 						&& list_compare sfdecl.func_parameters f.func_parameters) env.funcs
@@ -207,27 +213,36 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 		else raise(SemanticException("No return stmt in func def" ^ fdecl.func_name))
 
 let create_environment =
-        let new_funcs = [{ func_return_type = Void;
-			   func_name = "print";
-			   func_parameters = [("a",Int)];
-			   func_body = [];
+        let new_funcs = [{ Semast.func_return_type = Void;
+			   Semast.func_name = "print";
+			   Semast.func_parameters = [("a",Int)];
+			   Semast.func_body = [];
+			   Semast.func_locals = [];
 			};]
 	in
         let new_scope = { parent_scope = None; vars = [];} in
         {
-                funcs = new_funcs;
+                Semast.funcs = new_funcs;
                 scope = new_scope;
                 return_type = Void;
                 in_function_body = false;
         }
 
-let check_decl env decl =
-                match decl with Var(vdecl) -> let S_VarDecStmt(s) = check_stmt (VarDecStmt(vdecl)) env in S_Var(s)	
-                | Func(fdecl) -> S_Func(check_func_decl fdecl env)
+let check_decl env prog =
+                let vars = List.filter (fun decl ->  match decl with Var(vdecl) -> true | _ -> false) prog
+		and funs = List.filter (fun decl -> match decl with Func(decl) -> true | _ -> false) prog
+		in 
+		let globs = List.map (fun x -> match x with Var(vdecl) -> check_stmt (VarDecStmt(vdecl)) env ) vars 
+		and fdcls = List.map (fun x -> match x with Func(fdecl) -> check_func_decl fdecl env) funs
+		in
+		{ Semast.globals = List.map (fun x -> (match x with S_VarDecStmt(S_VarDecl((s,t),e)) -> (t,s,e))) globs;
+		  Semast.functions = fdcls 
+		}
 
 let check_prog prog =
-        let env = create_environment in
-        let sprog = S_Prog(List.map (check_decl env) prog) in
+        let env = create_environment in 
+	let sprog = check_decl env prog 
+	in
 	if List.exists (fun f -> f.func_name = "main" && f.func_return_type = Int) env.funcs 
 	then sprog
 	else raise(SemanticException("Main function not defined"))

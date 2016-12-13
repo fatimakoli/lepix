@@ -12,9 +12,10 @@ let _ = let action = if Array.length Sys.argv > 1 then
 	else Compile in	
 	let lexbuf = Lexing.from_channel stdin in
 	let ast = Parser.program Scanner.token lexbuf in
+	let sast = Semant.check_prog ast in
 	match action with
 		Ast -> print_endline (Ast.string_of_program ast)
-		| Sem -> let sem = Semant.check_prog ast in print_endline "Semantic checking passed"	
-		| Compile -> let m = Codegen.generate ast in 
+		| Sem -> print_endline "Semantic checking passed"; 
+		| Compile -> let m = Codegen.generate sast in 
 		Llvm_analysis.assert_valid_module m;
 		print_endline (Llvm.string_of_llmodule m)

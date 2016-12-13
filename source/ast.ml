@@ -80,8 +80,8 @@ let string_of_uop = function
 	| Neg -> "-"
 	| Not -> "!"
 
-let rec string_of_expr = function
-	| IntLit(l) -> string_of_int l
+let rec string_of_expr = function	
+	 IntLit(l) -> string_of_int l
 	| BoolLit(true) -> "true"
 	| BoolLit(false) -> "false"
 	| FloatLit(f) -> string_of_float f

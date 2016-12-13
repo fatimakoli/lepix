@@ -1,58 +1,19 @@
-(* Code generation: translate takes a semantically checked AST and
-produces LLVM IR
-
-LLVM tutorial: Make sure to read the OCaml version of the tutorial
-
-http://llvm.org/docs/tutorial/index.html
-
-Detailed documentation on the OCaml LLVM library:
-
-http://llvm.moe/
-http://llvm.moe/ocaml/
-
-*)
-
 module L = Llvm
 module A = Ast
-
+module S = Semast
 module StringMap = Map.Make(String)
 
-type scope = {
-	scope_name : string;
-	scope_variables : L.llvalue StringMap.t;
-	scope_functions : L.llvalue StringMap.t;
-}
-
-let _ = print_endline "Creating Context";;
-let context = L.global_context();;
-let _ = print_endline "Creating Builder";;
-let context_builder = L.builder context;;
-let _ = print_endline "Creating Module";;
-let m = L.create_module context "lepix";;
-let _ = print_endline "Creating Typenames";;
-let f32_t   = L.float_type   context;;
-let f64_t   = L.double_type  context;;
-let i8_t    = L.i8_type      context;;
-(* for 'char' type to printf -- even if they resolve to same type, we differentiate*)
-let char_t  = L.i8_type      context;;
-let i32_t   = L.i32_type     context;;
-let i64_t   = L.i64_type     context;;
-(* LLVM treats booleans as 1-bit integers, not distinct types with their own true / false *)
-let bool_t  = L.i1_type      context;;
-let void_t  = L.void_type    context;;
-(* TODO: clean up this hack and implement proper scoping and finding of functions
-and other scoped / namespaced / runtime libraries *)
-let _ = print_endline "Creating printf_t";;
-let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |];;
-let _ = print_endline "Creating printf_func";;
-let printf_func = L.declare_function "printf" printf_t m;;
-	
-
-let generate (ast) =
-	print_endline "Codegen.generate call..."; 	
-	(* Function to convert Ast types to LLVM Types
-	Applies itself recursively, using the above 
-	created types on the context *)
+let generate (sprog) =
+	let context = L.global_context () in
+	let _le_module = L.create_module context "Lepix"
+	and f32_t   = L.float_type   context
+	and f64_t   = L.double_type  context
+	and i8_t    = L.i8_type      context
+	and char_t  = L.i8_type      context
+	and i32_t   = L.i32_type     context
+	and i64_t   = L.i64_type     context
+	and bool_t  = L.i1_type      context
+	and void_t  = L.void_type    context in	
 	let rec ast_to_llvm_type = function
 		| A.Bool -> bool_t
 		| A.Int -> i32_t
@@ -60,110 +21,137 @@ let generate (ast) =
 		| A.Void -> void_t
 		| A.Array(t, d) -> L.array_type (ast_to_llvm_type t) d
 	in
-
-	let rec gen_expression sexpr = 
-		match sexpr with  
-		  A.Id(sl) -> 
-			(* TODO: fix this and the entire if condition by implementing search for the scope's functions *)
-			if sl = "print" then 
-				printf_func
-			else
-				printf_func
-		| A.BoolLit(value) -> L.const_int bool_t (if value then 1 else 0) (* bool_t is still an integer, must convert *)
-		| A.IntLit(value) -> L.const_int i32_t value
-		| A.FloatLit(value) -> L.const_float f32_t value
-		| A.Call(e, el) -> let s = A.Id(e) in
-				   let target = gen_expression s in 
-				   let int_format_str = L.build_global_stringptr "%d\n" "fmt" context_builder in
-				   let args = ( Array.of_list ( int_format_str :: (List.map gen_expression el) ) ) in
-				   let v = L.build_call target args "printf" context_builder in
-				   v
+	let global_vars = 
+		let global_var map (typ,name) = 
+			let init = L.const_int (ast_to_llvm_type typ) 0
+			in StringMap.add name (L.define_global name init _le_module) map in
+			let globals_list = List.map (fun (typ,s,e) -> (typ,s)) sprog.S.globals in
+		List.fold_left global_var StringMap.empty globals_list
+	in
+	let function_decls = 
+		let function_decl map fdecl = 
+			let param_types = Array.of_list (List.map (fun (_,t) -> ast_to_llvm_type t) fdecl.S.func_parameters)
+		in let ftype = L.function_type (ast_to_llvm_type fdecl.S.func_return_type) param_types
+		in StringMap.add fdecl.S.func_name (L.define_function fdecl.S.func_name ftype _le_module,fdecl) map
+		in List.fold_left function_decl StringMap.empty sprog.S.functions
+	in
+	let function_body fdecl = 
+		let (func,_) = StringMap.find fdecl.S.func_name function_decls
+		in let builder = L.builder_at_end context (L.entry_block func) in
+	let local_vars = 
+		let add_formals map (typ,name) p = L.set_value_name name p;
+		let local = L.build_alloca (ast_to_llvm_type typ) name builder in
+		ignore (L.build_store p local builder);
+		StringMap.add name local map in
 		
-		(* TODO: do code generation for these *)
-		| A.Access(e, el) ->
-			L.const_int i32_t 0
-		| A.Binop(e1, op, e2) ->
-			L.const_int i32_t 0
-		| A.Unop(op, e1) ->
-			L.const_int i32_t 0
-		| A.Assign(s, e) ->
-			L.const_int i32_t 0
-		| A.ArrayAssign(s, e1, e2) ->
-			L.const_int i32_t 0	
-		| A.InitArray(s, el) ->
-			L.const_int i32_t 0
-		| A.ArrayLit(el) ->
-			L.const_int i32_t 0
-		| A.Noexpr ->
-			L.const_int i32_t 0
+		let add_local map (typ,name) =
+			let local_var = L.build_alloca (ast_to_llvm_type typ) name builder
+			in StringMap.add name local_var map
+		in 
+		let params_list = List.map (fun (s,t) -> (t,s)) fdecl.S.func_parameters
+		in
+		let formals = List.fold_left2 add_formals StringMap.empty params_list (Array.to_list (L.params func)) 
+		in
+		let locals_list = List.map (fun (s,t) -> (t,s)) fdecl.S.func_locals in
+		List.fold_left add_local formals locals_list in
+
+	let lookup name = try StringMap.find name local_vars with Not_found -> StringMap.find name global_vars
 	in
-
-	let gen_statement = function
-		| A.Expr(e) -> gen_expression e
-		| A.Return(e) -> gen_expression e
-
-		(* TODO: fill this out *)
-		| A.If(e, true_sl, false_sl) ->
-			L.const_int i32_t 0 
-		| A.For(inite, compe, incre, sl) ->
-			L.const_int i32_t 0 
-		| A.While(expr, sl) ->
-			L.const_int i32_t 0 
-		| A.Break ->
-			L.const_int i32_t 0 
-		| A.Continue ->
-			L.const_int i32_t 0 
-		| A.VarDecStmt(vdecl) ->
-			L.const_int i32_t 0
-	in
-
-	let rec gen_statement_list = function
-		(* 0 value (default integer return, specifically to get main() working right now...*)
-		| [] -> L.const_int i32_t 0
-		| s :: [] -> gen_statement s
-		| s :: rest -> ignore(gen_statement s); gen_statement_list rest
-	in
-
-	(* TODO: this will come in handy later when we need to declare lots of functions
-	but not define them (e.g., for stuff we link in from the C Library or other modules... *)
-	(* let gen_function_declaration f = 
-		(* Generate the function with its signature *)
-		let args_t = Array.of_list (List.map (fun (_, t) -> ast_to_llvm_type t) f.A.func_parameters) in
-		let sig_t = L.function_type (ast_to_llvm_type f.A.func_return_type) args_t in
-		L.define_function f.A.func_name sig_t m;
-	in *)
-
-	let gen_function_definition f = 
-		print_endline "generating function definition";
-		(* Generate the function with its signature *)
-		let args_t = Array.of_list (List.map (fun (_, t) -> ast_to_llvm_type t) f.A.func_parameters) in
-		let sig_t = L.function_type (ast_to_llvm_type f.A.func_return_type) args_t in
-		let ll_func = L.define_function f.A.func_name sig_t m in
-		(* generate the body *)
-		let body_block = L.entry_block ll_func in
-		L.position_at_end body_block context_builder;
-		let ret_val = gen_statement_list f.A.func_body in
-		let _ = L.build_ret ret_val context_builder in
-		ll_func
-	in
-
-	let gen_variable_definition v =
-		print_endline "generating variable definition (unimplemented)";
-		(* TODO: placeholder, replace with actual variable definition and symbol insertion *)
-		L.const_int i32_t 0xCCCCCCC
-	in
-
-	let gen_decl = function
-		| A.Func(f) -> print_endline "Matching Func Decl"; gen_function_definition f
-		| A.Var(v) -> print_endline "Matching Var Decl"; gen_variable_definition v
-	in
-
-	let gen_program p =
-		ignore( List.map gen_decl p )
-	in
-
-	gen_program ast;
+	let rec gen_expression sexpr builder = 
+		match sexpr with
+		  S.S_Id(s,typ) -> L.build_load (lookup s) s builder
+		| S.S_BoolLit(value) -> L.const_int bool_t (if value then 1 else 0) (* bool_t is still an integer, must convert *)
+		| S.S_IntLit(value) -> L.const_int i32_t value
+		| S.S_FloatLit(value) -> L.const_float f32_t value
+		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
+					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
+					 let result = (match fdecl.S.func_return_type with A.Void -> ""
+											| _ -> e ^ "_result")
+				          in L.build_call fcode (Array.of_list actuals) result builder
 	
-	print_endline "return module m"; 
-	m
-;;
+		| S.S_Access(e, el,typ) ->
+			L.const_int i32_t 0
+		| S.S_Binop(e1, op, e2,typ) ->
+			let left = gen_expression e1 builder
+			and right = gen_expression e2 builder in
+			(
+			match op with A.Add -> L.build_add
+			|	      A.Sub -> L.build_sub
+			|	      A.Mult -> L.build_mul 
+			|	      A.Div -> L.build_sdiv
+			|	      A.And -> L.build_and
+			|	      A.Or -> L.build_or
+			|	      A.Equal -> L.build_icmp L.Icmp.Eq
+			|	      A.Neq -> L.build_icmp L.Icmp.Ne
+			|	      A.Less -> L.build_icmp L.Icmp.Slt
+			|             A.Leq -> L.build_icmp L.Icmp.Sle
+		        |             A.Greater -> L.build_icmp L.Icmp.Sgt
+			|	      A.Geq -> L.build_icmp L.Icmp.Sge
+			) left right "tmp" builder
+		| S.S_Unop(op, e1,typ) ->
+			let exp = gen_expression  e1 builder in
+			(
+				match op with A.Neg -> L.build_neg
+					      | A.Not -> L.build_not
+			) exp "tmp" builder
+		| S.S_Assign(s, e,typ) ->
+				L.const_int i32_t 0
+		| S.S_ArrayAssign(s, e1, e2,typ) ->
+			L.const_int i32_t 0	
+		| S.S_InitArray(s, el,typ) ->
+			L.const_int i32_t 0
+		| S.S_ArrayLit(el,typ) ->
+			L.const_int i32_t 0
+		| S.S_Noexpr ->
+			L.const_int i32_t 0
+	in
+        let add_terminal builder e =
+        	match L.block_terminator (L.insertion_block builder ) with
+                Some _ -> ()
+                | None -> ignore (e builder)	
+	in
+	let rec gen_statement s builder =
+		match s with 
+		  S.S_Expr(e,typ) -> ignore(gen_expression e builder); builder
+		| S.S_Return(e,typ) -> ignore (match fdecl.S.func_return_type with A.Void -> L.build_ret_void builder
+								| _ -> L.build_ret (gen_expression e builder) builder); builder
+		| S.S_Block(sl) -> gen_stmt_list sl builder 
+		| S.S_If(e, true_sl, false_sl) -> let cond = gen_expression e builder in
+						  let merge_bb = L.append_block context "merge" func in
+						  let then_bb = L.append_block context "then" func in
+						  add_terminal (gen_statement true_sl (L.builder_at_end context then_bb))
+                                                                (L.build_br then_bb);
+						  let else_bb = L.append_block context "else" func in
+						  add_terminal (gen_statement false_sl (L.builder_at_end context else_bb))
+								(L.build_br merge_bb);
+
+						  ignore(L.build_cond_br cond then_bb else_bb builder);
+						  L.builder_at_end context merge_bb
+
+		| S.S_For(inite, compe, incre, sl) -> gen_statement (S.S_Block [S.S_Expr(inite,A.Int); S.S_While (compe, 
+								S.S_Block [sl ; S.S_Expr(incre,A.Int)])]) builder
+		| S.S_While(expr, body) -> let pred_bb = L.append_block context "while" func in
+						       ignore(L.build_br pred_bb builder);
+					 let body_bb = L.append_block context "while_bod" func in
+				 	 add_terminal (gen_statement body (L.builder_at_end context body_bb)) (L.build_br pred_bb);
+				
+					let pred_builder = L.builder_at_end context pred_bb in
+					let bool_val = gen_expression expr pred_builder in
+					let merge_bb = L.append_block context "merge" func in
+					ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
+					L.builder_at_end context merge_bb 
+		| S.S_VarDecStmt(v) -> builder	
+	
+	and 
+	gen_stmt_list sl builder = 
+		match sl with [] -> builder
+			   |  hd::[] -> gen_statement hd builder
+			   |  hd::tl -> ignore(gen_statement hd builder); gen_stmt_list tl builder 
+	in
+	let builder = gen_statement (S.S_Block fdecl.S.func_body) builder in 
+
+	add_terminal builder (match fdecl.S.func_return_type with A.Void -> L.build_ret_void
+				| t -> L.build_ret (L.const_int (ast_to_llvm_type t) 0))
+	in
+	List.iter function_body sprog.functions;
+	_le_module 

@@ -10,8 +10,8 @@ let reverse_list l =
 
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA LSQUARE RSQUARE COLON FUN CONTINUE BREAK PARALLEL TO BY INVOCATIONS ATOMIC THREADCOUNT
-%token DOT NAMESPACE
+%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA LSQUARE RSQUARE COLON FUN CONTINUE BREAK TO BY STRING
+%token DOT QUOTE 
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR VAR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID FLOAT
 %token <int> INTLITERAL
@@ -48,7 +48,7 @@ type_name:
 | type_name LSQUARE LSQUARE LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3) }
 
 expr:
-| INTLITERAL { IntLit($1) }
+ INTLITERAL { IntLit($1) }
 | FLOATLITERAL { FloatLit($1) }
 | TRUE { BoolLit(true) }
 | FALSE { BoolLit(false) }
@@ -72,8 +72,6 @@ expr:
 | expr OR expr { Binop( $1, Or, $3) }
 | ID ASSIGN expr { Assign($1, $3) }
 
-binding:
-ID COLON type_name { ($1,$3) }
 
 params_list: { [] }
 | ID COLON type_name { [($1,$3)] }

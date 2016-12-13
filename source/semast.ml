@@ -33,7 +33,8 @@ type s_func_decl = {
 	func_name : string;
 	func_parameters : bind list;
 	func_return_type : typ;
-	func_body : s_stmt list;	
+	func_body : s_stmt list;
+	func_locals : bind list;	
 }
 
 type s_decl = 
@@ -41,8 +42,10 @@ type s_decl =
 |	S_Var of s_var_decl
 
 
-type s_program = 	
-	S_Prog of s_decl list	
+type s_program = {	
+	globals : (Ast.typ*string*s_expr) list;
+	functions : s_func_decl list;
+}
 
 
 type symbolTable = {
