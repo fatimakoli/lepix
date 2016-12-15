@@ -12,7 +12,7 @@ type s_expr =
 |	S_Assign of string * s_expr * typ
 |	S_ArrayAssign of string * s_expr list * s_expr * typ
 |	S_ArrayLit of s_expr list * typ
-|	S_InitArray of string * s_expr list * typ
+|	S_InitArray of string * s_expr list * s_expr * typ
 |	S_Noexpr
 
 type s_var_decl
