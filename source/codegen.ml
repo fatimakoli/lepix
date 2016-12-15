@@ -28,6 +28,10 @@ let generate (sprog) =
 			let globals_list = List.map (fun (typ,s,e) -> (typ,s)) sprog.S.globals in
 		List.fold_left global_var StringMap.empty globals_list
 	in
+	
+	let print_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
+		let print_func = L.declare_function "printf" print_t _le_module in
+	
 	let function_decls = 
 		let function_decl map fdecl = 
 			let param_types = Array.of_list (List.map (fun (_,t) -> ast_to_llvm_type t) fdecl.S.func_parameters)
@@ -38,6 +42,8 @@ let generate (sprog) =
 	let function_body fdecl = 
 		let (func,_) = StringMap.find fdecl.S.func_name function_decls
 		in let builder = L.builder_at_end context (L.entry_block func) in
+
+		let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
 	let local_vars = 
 		let add_formals map (typ,name) p = L.set_value_name name p;
 		let local = L.build_alloca (ast_to_llvm_type typ) name builder in
@@ -63,7 +69,8 @@ let generate (sprog) =
 		| S.S_BoolLit(value) -> L.const_int bool_t (if value then 1 else 0) (* bool_t is still an integer, must convert *)
 		| S.S_IntLit(value) -> L.const_int i32_t value
 		| S.S_FloatLit(value) -> L.const_float f32_t value
-		| S.S_Call(e, el, typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
+		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
+		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
 					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
 											| _ -> e ^ "_result")
