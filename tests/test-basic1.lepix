@@ -1,0 +1,5 @@
+fun main() : int
+{
+  var x:int = 2;
+  return 0;
+}
