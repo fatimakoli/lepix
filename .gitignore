@@ -6,6 +6,9 @@
 *.gz
 *.toc
 *.exe
+*.ll
+*.diff
+*.native
 source/.vs/
 source/__pycache__/
 source/_build/
