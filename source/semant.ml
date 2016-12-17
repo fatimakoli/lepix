@@ -99,7 +99,7 @@ and find_function env fname el =
         let args_types_call = List.map get_expr_type sexpr_list_args in
         try
                 let found = List.find ( fun f -> f.func_name = fname ) env.funcs in
-                let formals_types = List.map snd found.func_parameters in
+                let formals_types = List.map fst found.func_parameters in
                 if List.length args_types_call = List.length formals_types
                 then (if list_compare args_types_call formals_types 
 		      then found 
@@ -140,7 +140,8 @@ let rec check_stmt st env =
 	| While(e,sl) -> check_while e sl env
 	| Break -> S_Break
 	| Continue -> S_Continue
-	| VarDecStmt(VarDecl((name,typ),e)) -> check_var_decl name typ e env	
+	| VarDecStmt(VarDecl((name,typ),e)) -> check_var_decl name typ e env  
+				
 
 and check_return e env = 
 	if not env.in_function_body then raise(SemanticException("Return used outside function body"))
@@ -189,7 +190,7 @@ and check_var_decl name typ e env =
 	if sexpr_typ <> typ && sexpr_typ <> Void then raise(SemanticException("Invalid type assigned in declaration"))
         else env.scope.vars <- (typ,name)::env.scope.vars; S_VarDecStmt(S_VarDecl((name,typ),sexpr))
 
-let check_func_decl (fdecl : Ast.func_decl) env = 
+let check_func_decl (fdecl : Ast.func_decl) env =	
 	if env.in_function_body then
 		raise (SemanticException("Nested function declaration"))
 	else
@@ -199,12 +200,24 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 		in	
 		if (fdecl.func_return_type = Void || 
 			List.exists (fun x -> match x with Return(e) -> true | _ -> false) fdecl.func_body) 
-		then let sfdecl =  {Semast.func_name = fdecl.func_name; 
+		then let sfbody = List.map (fun s -> check_stmt s f_env) fdecl.func_body in
+		let sfdecl = {Semast.func_name = fdecl.func_name; 
 						Semast.func_return_type = fdecl.func_return_type;
-						Semast.func_parameters = fdecl.func_parameters; 
-						Semast.func_body = (List.map (fun s -> check_stmt s f_env) fdecl.func_body);
-						Semast.func_locals = List.map (fun (a,b) -> (b,a)) f_env.scope.vars;}
-		     in (
+						Semast.func_parameters = List.map (fun (a,b) -> (b,a)) fdecl.func_parameters; 
+						Semast.func_body = sfbody;
+						Semast.func_locals = List.map (fun x -> 
+										match x with 
+										S_VarDecStmt(S_VarDecl((name,typ),sexpr)) -> 
+													(typ,name,sexpr)
+										| _ -> raise(SemanticException("You're fucked"))
+										) 
+								     		(List.filter (fun decl ->  
+											match decl with  
+										S_VarDecStmt(S_VarDecl(t,sexpr)) ->
+										 true 
+										| _ -> false
+										) sfbody);} 
+		     in (		
 			if List.exists (fun f -> sfdecl.func_name = f.func_name 
 						&& list_compare sfdecl.func_parameters f.func_parameters) env.funcs
 			then raise(SemanticException("Redefining function " ^ fdecl.func_name))
@@ -215,7 +228,7 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 let create_environment =
         let new_funcs = [{ Semast.func_return_type = Void;
 			   Semast.func_name = "print";
-			   Semast.func_parameters = [("a",Int)];
+			   Semast.func_parameters = [(Int,"a")];
 			   Semast.func_body = [];
 			   Semast.func_locals = [];
 			};]

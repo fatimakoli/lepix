@@ -43,9 +43,15 @@ type_name:
 | FLOAT { Float }
 | BOOL { Bool }
 | VOID { Void }
+<<<<<<< HEAD
 | type_name LSQUARE expr RSQUARE{ Array($1, 1, $3 ,IntLit(0 ), IntLit(0) }
 | type_name LSQUARE LSQUARE expr COMMA expr RSQUARE RSQUARE { Array($1, 2, $4, $6, IntLit(0) }
 | type_name LSQUARE LSQUARE LSQUARE expr COMMA expr COMMA expr RSQUARE RSQUARE RSQUARE { Array($1, 3, $5, $7, $9) }
+=======
+| type_name LSQUARE RSQUARE { Array($1, 1) }
+| type_name LSQUARE LSQUARE RSQUARE RSQUARE { Array($1, 2)  }
+| type_name LSQUARE LSQUARE LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3) }
+>>>>>>> 107830dd7a984047b0acfb1ddb8884de54e024db
 
 expr:
  INTLITERAL { IntLit($1) }
@@ -78,7 +84,11 @@ params_list: { [] }
 | ID COLON type_name COMMA params_list { ($1,$3)::$5 }
 
 var_decl:
-| VAR ID COLON type_name ASSIGN expr SEMI { VarDecl(($2,$4),$6) }
+ VAR ID COLON type_name ASSIGN expr SEMI { VarDecl(($2,$4),$6) }
+| VAR ID COLON INT SEMI { VarDecl(($2,Int),IntLit(0)) }
+| VAR ID COLON FLOAT SEMI { VarDecl(($2,Float),FloatLit(0.0)) }
+| VAR ID COLON BOOL SEMI { VarDecl(($2,Bool),BoolLit(false)) }
+
 
 fun_decl:
 FUN ID LPAREN params_list RPAREN COLON type_name LBRACE statement_list RBRACE { { func_name=$2; func_parameters=$4; func_return_type=$7; func_body=$9} }
@@ -100,9 +110,7 @@ statement:
 | BREAK SEMI { Break }
 | CONTINUE SEMI { Continue }
 | var_decl { VarDecStmt($1) } 
-/* | PARALLEL LPAREN INVOCATIONS ASSIGN expr RPAREN LBRACE statement_list RBRACE  { Parallel([$5],$8) }
-| ATOMIC LBRACE statement_list RBRACE { Atomic($3) }
-*/
+
 
 decls_list : { [] }
 | decls_list fun_decl { Func($2)::$1 }

@@ -3,12 +3,12 @@ var b:int;
 
 fun printa(): void
 {
-  lib.print(a);
+  print(a);
 }
 
 fun printb(): void
 {
-  lib.print(b);
+  print(b);
 }
 
 fun incab(): void

@@ -1,0 +1,11 @@
+fun main () : int
+{
+	var a : int;
+	a = 4;
+	if(a < 5)
+	{
+		print(5);
+	}
+
+	return 0;
+}
