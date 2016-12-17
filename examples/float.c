@@ -1,5 +1,4 @@
-#include "preamble/lib_preamble.h"
-
+#include <stdio.h>
 // fun main() : int {
 int main() {
 	// var x : float = 10.2;
@@ -10,8 +9,6 @@ int main() {
 	int y = 11;
 	// lib.print(y);
 	printf("%d\n", y);
-	// lib.print((x / 2) + (y / 2));
-	printf("%f\n", (x / 2) + (y / 2));
 // }
 	return 0;
 }

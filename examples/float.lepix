@@ -3,5 +3,4 @@ fun main () : int {
 	lib.print( x );
 	var y : int = 11;
 	lib.print( y );
-	lib.print( x / 2 + y / 2);
 }

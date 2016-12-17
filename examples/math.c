@@ -1,5 +1,4 @@
-#include "preamble/lib_preamble.h"
-
+#include <stdio.h>
 // fun main() : int {
 int main() {
 	// lib.print((24 + 18 * 2 / 6) % 32);

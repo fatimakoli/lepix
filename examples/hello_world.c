@@ -1,4 +1,4 @@
-#include "preamble/lib_preamble.h"
+#include <stdio.h>
 
 // fun main() : int {
 int main() {
