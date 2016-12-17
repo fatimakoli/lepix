@@ -10,7 +10,7 @@ type typ =
 	| Bool 
 	| Void 
 	| Float 
-	| Array of typ * int
+	| Array of typ * int * int * int * int 
 
 type bind = string * typ
 
