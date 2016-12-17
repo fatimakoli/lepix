@@ -2,4 +2,4 @@
 
 The classy image editing language.
 
-https://github.com/ThePhD/lepix/blob/master/proposal/lepix.pdf
+https://github.com/gabriellet/lepix/blob/master/proposal/lepix.pdf
