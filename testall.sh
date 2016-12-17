@@ -11,8 +11,8 @@ LLI="lli"
 
 # Path to the lepix compiler.  Usually "./lepix.native"
 # Try "_build/lepix.native" if ocamlbuild was unable to create a symbolic link.
-MICROC="./lepix.native"
-#MICROC="_build/lepix.native"
+LEPIX="source/lepix.native -c"
+#LEPIX="source/_build/lepix.native"
 
 # Set time limit for all operations
 ulimit -t 30
@@ -42,6 +42,7 @@ SignalError() {
 # Compare <outfile> <reffile> <difffile>
 # Compares the outfile with reffile.  Differences, if any, written to difffile
 Compare() {
+    # echo "generated files: $generatedfiles"
     generatedfiles="$generatedfiles $3"
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
@@ -72,6 +73,7 @@ RunFail() {
 }
 
 Check() {
+    # echo "in check"
     error=0
     basename=`echo $1 | sed 's/.*\\///
                              s/.lepix//'`
@@ -85,10 +87,11 @@ Check() {
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles ${basename}.ll ${basename}.out" &&
-    Run "$MICROC" "<" $1 ">" "${basename}.ll" &&
-    Run "$LLI" "${basename}.ll" ">" "${basename}.out" &&
-    Compare ${basename}.out ${reffile}.out ${basename}.diff
+    generatedfiles="$generatedfiles tests/${basename}.ll tests/${basename}.out" &&
+    # echo "check generatedfiles: $generatedfiles" &&
+    Run "$LEPIX" "<" $1 ">" "tests/${basename}.ll" &&
+    Run "$LLI" "tests/${basename}.ll" ">" "tests/${basename}.out" &&
+    Compare "tests/${basename}.out" "tests/${reffile}.out" "tests/${basename}.diff"
 
     # Report the status and clean up the generated files
 
@@ -105,6 +108,7 @@ Check() {
 }
 
 CheckFail() {
+    # echo "in checkfail"
     error=0
     basename=`echo $1 | sed 's/.*\\///
                              s/.lepix//'`
@@ -118,9 +122,10 @@ CheckFail() {
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
-    RunFail "$MICROC" "<" $1 "2>" "${basename}.err" ">>" $globallog &&
-    Compare ${basename}.err ${reffile}.err ${basename}.diff
+    generatedfiles="$generatedfiles tests/${basename}.err tests/${basename}.diff" &&
+    # echo "checkfail generatedfiles: $generatedfiles" &&
+    RunFail "$LEPIX" "<" $1 "2>" "tests/${basename}.err" ">>" $globallog &&
+    Compare "tests/${basename}.err" "tests/${reffile}.err" "tests/${basename}.diff"
 
     # Report the status and clean up the generated files
 
