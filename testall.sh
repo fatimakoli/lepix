@@ -42,7 +42,7 @@ SignalError() {
 # Compare <outfile> <reffile> <difffile>
 # Compares the outfile with reffile.  Differences, if any, written to difffile
 Compare() {
-    # echo "generated files: $generatedfiles"
+    # echo "in compare"
     generatedfiles="$generatedfiles $3"
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
@@ -54,6 +54,7 @@ Compare() {
 # Run <args>
 # Report the command, run it, and report any errors
 Run() {
+    # echo "in run"
     echo $* 1>&2
     eval $* || {
 	SignalError "$1 failed on $*"
@@ -64,6 +65,7 @@ Run() {
 # RunFail <args>
 # Report the command, run it, and expect an error
 RunFail() {
+    # echo "in runfail"
     echo $* 1>&2
     eval $* && {
 	SignalError "failed: $* did not report an error"
@@ -81,17 +83,18 @@ Check() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
+    # echo $reffile
+    # echo $basedir
 
     echo 1>&2
     echo "###### Testing $basename" 1>&2
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles tests/${basename}.ll tests/${basename}.out" &&
-    # echo "check generatedfiles: $generatedfiles" &&
-    Run "$LEPIX" "<" $1 ">" "tests/${basename}.ll" &&
-    Run "$LLI" "tests/${basename}.ll" ">" "tests/${basename}.out" &&
-    Compare "tests/${basename}.out" "tests/${reffile}.out" "tests/${basename}.diff"
+    generatedfiles="$generatedfiles ${basename}.ll ${basename}.out" &&
+    Run "$LEPIX" "<" $1 ">" "${basename}.ll" &&
+    Run "$LLI" "${basename}.ll" ">" "${basename}.out" &&
+    Compare ${basename}.out ${reffile}.out ${basename}.diff
 
     # Report the status and clean up the generated files
 
@@ -122,10 +125,10 @@ CheckFail() {
 
     generatedfiles=""
 
-    generatedfiles="$generatedfiles tests/${basename}.err tests/${basename}.diff" &&
-    # echo "checkfail generatedfiles: $generatedfiles" &&
-    RunFail "$LEPIX" "<" $1 "2>" "tests/${basename}.err" ">>" $globallog &&
-    Compare "tests/${basename}.err" "tests/${reffile}.err" "tests/${basename}.diff"
+    generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
+    # generatedfiles="$generatedfiles ${basename}.diff" &&
+    RunFail "$LEPIX" "<" $1 "2>" "${basename}.err" ">>" $globallog &&
+    Compare ${basename}.err ${reffile}.err ${basename}.diff
 
     # Report the status and clean up the generated files
 

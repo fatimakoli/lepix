@@ -3,12 +3,15 @@
 *.log
 *.aux
 *.out
+!tests/*.out
+*.err
+!tests/*.err
+*.ll
+!examples/*.ll
 *.gz
 *.toc
 *.exe
 *.native
-tests/*.ll
-tests/*.diff
 source/.vs/
 source/__pycache__/
 source/_build/
