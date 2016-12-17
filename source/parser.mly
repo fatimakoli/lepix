@@ -43,9 +43,9 @@ type_name:
 | FLOAT { Float }
 | BOOL { Bool }
 | VOID { Void }
-| type_name LSQUARE RSQUARE { Array($1, 1) }
-| type_name LSQUARE LSQUARE RSQUARE RSQUARE { Array($1, 2) }
-| type_name LSQUARE LSQUARE LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3) }
+| type_name LSQUARE expr RSQUARE { Array($1, 1, $3, 0, 0) }
+| type_name LSQUARE LSQUARE expr COMMA expr RSQUARE RSQUARE { Array($1, 2, $4, $6, 0)  }
+| type_name LSQUARE LSQUARE expr COMMA expr COMMA expr LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3, $4, $6, $8) }
 
 expr:
  INTLITERAL { IntLit($1) }
