@@ -65,7 +65,7 @@ let generate (sprog) =
 	in
 	let rec gen_expression sexpr builder = 
 		match sexpr with
-		  S.S_Id(s, typ) -> L.build_load (lookup s) s builder
+		  S.S_Id(s,typ) -> L.build_load (lookup s) s builder
 		| S.S_BoolLit(value) -> L.const_int bool_t (if value then 1 else 0) (* bool_t is still an integer, must convert *)
 		| S.S_IntLit(value) -> L.const_int i32_t value
 		| S.S_FloatLit(value) -> L.const_float f32_t value
@@ -76,9 +76,9 @@ let generate (sprog) =
 											| _ -> e ^ "_result")
 				          in L.build_call fcode (Array.of_list actuals) result builder
 	
-		| S.S_Access(e, el, typ) ->
+		| S.S_Access(e, el,typ) ->
 			L.const_int i32_t 0
-		| S.S_Binop(e1, op, e2, typ) ->
+		| S.S_Binop(e1, op, e2,typ) ->
 			let left = gen_expression e1 builder
 			and right = gen_expression e2 builder in
 			(
@@ -105,14 +105,14 @@ let generate (sprog) =
 				L.const_int i32_t 0
 		| S.S_ArrayAssign(s, e1, e2, typ) ->
 			L.const_int i32_t 0	
-		| S.S_InitArray(s, el, e, typ) ->	(* L.const_int i32_t 0	 *)
-											let arr = L.build_alloca [e x (ast_to_llvm_type typ)] in
+		| S.S_InitArray(s, el, typ) -> 	L.const_int i32_t 0	
+											(*let arr = L.build_alloca [e x (ast_to_llvm_type typ)] in
 											let pointer = L.bitcast L.pointer_type arr L.pointer_type (ast_to_llvm_type typ) in
-											L.build_call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([3 x i32]* @main.arr to i8*), i64 12, i32 4, i1 false)
+											L.build_call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([3 x i32]* @main.arr to i8* ), i64 12, i32 4, i1 false) *)
 											(* llvm for int arr[3] = {2,3,4};
 											%arr = alloca [3 x i32], align 4
 											%2 = bitcast [3 x i32]* %arr to i8*
-  											call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([3 x i32]* @main.arr to i8*)(*, i64 12, i32 4, i1 false) *)
+  											call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([3 x i32]* @main.arr to i8*)(*, i64 12, i32 4, i1 false) *) 
 											(* from PICEL:
 											let arraystar_type = L.pointer_type (ast_to_llvm_type typ) in  
 							                let cast_pointer = L.build_bitcast addr arraystar_type "c_ptr" builder in
@@ -162,13 +162,13 @@ let generate (sprog) =
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder
-			   |  hd::[] -> gen_statement hd builder
-			   |  hd::tl -> ignore(gen_statement hd builder); gen_stmt_list tl builder 
+			| hd ::[] -> gen_statement hd builder
+			| hd::tl -> ignore(gen_statement hd builder); gen_stmt_list tl builder
 	in
 	let builder = gen_statement (S.S_Block fdecl.S.func_body) builder in 
 
 	add_terminal builder (match fdecl.S.func_return_type with A.Void -> L.build_ret_void
-				| t -> L.build_ret (L.const_int (ast_to_llvm_type t) 0))
-	in
+			| t -> L.build_ret (L.const_int (ast_to_llvm_type t) 0))
+	in 
 	List.iter function_body sprog.functions;
-	_le_module 
+	_le_module
