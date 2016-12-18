@@ -9,7 +9,7 @@ before_install:
      - sudo apt-get install opam
      - echo 'y' | opam init
      - eval `opam config env`
-     - echo 'Y' | opam install llvm.3.4 ocamlfind
+     - opam install -q llvm.3.4 ocamlfind
 
 script:
      - cd source
