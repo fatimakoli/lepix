@@ -1,4 +1,5 @@
-fun foo(i:bool): void
+var i:bool = true;
+fun foo(j:bool): void
 {
   var i:int; /* Should hide the formal i */
 

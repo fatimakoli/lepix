@@ -1,0 +1,13 @@
+fun foo(i:bool): void
+{
+  var i:int; /* i already declared */
+
+  i = 42;
+  print(i + i);
+}
+
+fun main(): int
+{
+  foo(true);
+  return 0;
+}
