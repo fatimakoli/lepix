@@ -1,5 +1,5 @@
 fun main(): int
 {
-  lib.print(39 + 3);
+  print(1 + 2 * 3 + 4);
   return 0;
 }

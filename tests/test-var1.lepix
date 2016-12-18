@@ -2,6 +2,6 @@ fun main() : int
 {
   var a : int;
   a = 42;
-  lib.print(a);
+  print(a);
   return 0;
 }

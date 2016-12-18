@@ -8,6 +8,6 @@ fun foo(c:int) : void
 fun main() : int 
 {
   foo(73);
-  lib.print(a);
+  print(a);
   return 0;
 }

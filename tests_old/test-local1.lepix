@@ -3,7 +3,7 @@ fun foo(i:bool): void
   var i:int; /* Should hide the formal i */
 
   i = 42;
-  lib.print(i + i);
+  print(i + i);
 }
 
 fun main(): int

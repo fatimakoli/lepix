@@ -6,6 +6,6 @@ fun main(): int
 {
   i = 42;
   j = 10;
-  lib.print(i + j);
+  print(i + j);
   return 0;
 }

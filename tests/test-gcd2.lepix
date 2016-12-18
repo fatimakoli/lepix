@@ -9,8 +9,8 @@ fun gcd(a:int, b:int): int {
 
 fun main(): int
 {
-  lib.print(gcd(14,21));
-  lib.print(gcd(8,36));
-  lib.print(gcd(99,121));
+  print(gcd(14,21));
+  print(gcd(8,36));
+  print(gcd(99,51));
   return 0;
 }

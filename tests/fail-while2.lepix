@@ -9,5 +9,5 @@ fun main(): int
   while (true) {
     foo(); /* foo undefined */
   }
-
+  return 0;
 }

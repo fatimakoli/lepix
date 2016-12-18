@@ -1,0 +1,1 @@
+Assertion failed: (getCondition()->getType()->isIntegerTy(1) && "May only branch on boolean predicates!"), function AssertOK, file Instructions.cpp, line 728.

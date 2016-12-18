@@ -9,6 +9,6 @@ fun foo(a:int, b:int):int
 }
 
 fun main(): int {
- lib.print(foo(37, false));
+ print(foo(37, 0));
  return 0;
 }

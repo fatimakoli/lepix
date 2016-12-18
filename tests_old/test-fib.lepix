@@ -6,11 +6,11 @@ fun fib(x:int): int
 
 fun main(): int
 {
-  lib.print(fib(0));
-  lib.print(fib(1));
-  lib.print(fib(2));
-  lib.print(fib(3));
-  lib.print(fib(4));
-  lib.print(fib(5));
+  print(fib(0));
+  print(fib(1));
+  print(fib(2));
+  print(fib(3));
+  print(fib(4));
+  print(fib(5));
   return 0;
 }

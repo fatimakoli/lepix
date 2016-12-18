@@ -1,0 +1,6 @@
+fun main(): int {
+	var x:int = 301;
+	var y:int = x/3;
+	print(y);
+	return 0;
+}

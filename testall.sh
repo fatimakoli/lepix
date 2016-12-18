@@ -17,6 +17,11 @@ LEPIX="source/lepix.native -c"
 # Set time limit for all operations
 ulimit -t 30
 
+# Colors!
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+NC="\033[0m" # No Color
+
 globallog=testall.log
 rm -f $globallog
 error=0
@@ -33,7 +38,7 @@ Usage() {
 
 SignalError() {
     if [ $error -eq 0 ] ; then
-	echo "FAILED"
+	echo -e "${RED}(ಥ_ಥ)${NC}"
 	error=1
     fi
     echo "  $1"
@@ -47,6 +52,15 @@ Compare() {
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
 	SignalError "$1 differs"
+    echo "=========="
+    echo "EXPECTED OUTPUT:"
+    cat $2
+    echo ""
+    echo "=========="
+    echo "ACTUAL OUTPUT:"
+    cat $1
+    echo "=========="
+
 	echo "FAILED $1 differs from $2" 1>&2
     }
 }
@@ -100,7 +114,7 @@ Check() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "OK"
+	echo -e "${GREEN}(•◡•)${NC}"
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2
@@ -134,7 +148,7 @@ CheckFail() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "OK"
+	echo -e "${GREEN}(•◡•)${NC}"
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2
