@@ -10,7 +10,7 @@ fun main(): int
 
   func(i = 2, i = i+1);
 
-  lib.print(i);
+  print(i);
   return 0;
 }
 

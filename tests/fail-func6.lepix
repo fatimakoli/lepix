@@ -2,7 +2,7 @@ fun foo(a : int, b : bool) : void
 {
 }
 
-fun main(): int
+fun main(): void
 {
   foo(42, true);
   foo(42); /* Wrong number of arguments */

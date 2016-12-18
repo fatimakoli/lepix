@@ -1,9 +1,9 @@
 fun printem(a:int, b:int, c:int, d:int): void
 {
-  lib.print(a);
-  lib.print(b);
-  lib.print(c);
-  lib.print(d);
+  print(a);
+  print(b);
+  print(c);
+  print(d);
 }
 
 fun main(): int
