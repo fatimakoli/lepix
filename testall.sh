@@ -38,7 +38,7 @@ Usage() {
 
 SignalError() {
     if [ $error -eq 0 ] ; then
-	echo "${RED}(ಥ_ಥ)${NC}"
+	echo "\t\t${RED}(ಥ_ಥ)${NC}"
 	error=1
     fi
     echo "  $1"
@@ -114,7 +114,7 @@ Check() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "${GREEN}(•◡•)${NC}"
+	echo "\t\t${GREEN}(•◡•)${NC}"
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2
@@ -148,7 +148,7 @@ CheckFail() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "${GREEN}(•◡•)${NC}"
+	echo "\t\t${GREEN}(•◡•)${NC}"
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2
