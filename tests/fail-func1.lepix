@@ -1,8 +1,8 @@
-fun foo(): int {}
+fun foo(): int {return 0;}
 
-fun bar(): int {}
+fun bar(): int {return 0;}
 
-fun baz(): int {}
+fun baz(): int {return 0;}
 
 fun bar(): void {} /* Error: duplicate function bar */
 

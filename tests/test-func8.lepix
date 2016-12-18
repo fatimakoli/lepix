@@ -1,6 +1,6 @@
-fun foo(int a):void
+fun foo(a:int):void
 {
-  lib.print(a + 3);
+  print(a + 3);
 }
 
 fun main(): int

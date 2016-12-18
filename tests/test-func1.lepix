@@ -7,6 +7,6 @@ fun main(): int
 {
   var a:int;
   a = add(39, 3);
-  lib.print(a);
+  print(a);
   return 0;
 }
