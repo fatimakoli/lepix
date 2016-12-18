@@ -198,6 +198,7 @@ and check_var_decl name typ e env =
         then raise(SemanticException("Variable has already been declared"))
         else 
 	if sexpr_typ <> typ && sexpr_typ <> Void then raise(SemanticException("Invalid type assigned in declaration"))
+	else if typ = Void then raise(SemanticException("Cannot have var of type void")) 
         else env.scope.vars <- (typ,name)::env.scope.vars; S_VarDecStmt(S_VarDecl((name,typ),sexpr))
 
 let check_func_decl (fdecl : Ast.func_decl) env =	

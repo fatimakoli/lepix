@@ -1,4 +1,4 @@
-fun foo() : int {}
+fun foo() : int {return 0}
 
 fun bar() : int {
   var a : int;
