@@ -47,7 +47,6 @@ type_name:
 | FLOAT { Float }
 | BOOL { Bool }
 | VOID { Void }
-
 | type_name LSQUARE int_list RSQUARE{ Array($1, $3 , 1) }
 | type_name LSQUARE LSQUARE int_list RSQUARE RSQUARE { Array($1, $4, 2) }
 | type_name LSQUARE LSQUARE LSQUARE int_list RSQUARE RSQUARE RSQUARE { Array($1, $5, 3) }
