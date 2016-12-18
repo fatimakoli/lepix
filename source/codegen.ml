@@ -15,7 +15,18 @@ let generate (sprog) =
 	and i32_t   = L.i32_type     context
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
-	and void_t  = L.void_type    context in	
+	and void_t  = L.void_type    context in
+	let get_arr_sz arr = 
+		match arr with A.Array(t,il,d) -> (let sz = match d with 1 -> (List.nth il 0)
+                                                             | 2 -> (List.nth il 1) * (List.nth il 1)
+                                                             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0)
+                                                             | _ -> raise(CodegenError("Too many dimensions"))
+						in sz)
+
+						| _ -> raise(CodegenError("Cannot find array size for non-array"))
+                                                	      
+        in
+	
 	let rec ast_to_llvm_type = function
 		| A.Bool -> bool_t
 		| A.Int -> i32_t
@@ -55,9 +66,14 @@ let generate (sprog) =
 		ignore (L.build_store p local builder);
 		StringMap.add name local map in
 		
-		let rec add_local map (name,typ,e) =
-			let local_var = L.build_alloca (ast_to_llvm_type typ) name builder in		
-			StringMap.add name local_var map
+		let rec add_local map (name,typ,e) = match typ with A.Array(t,il,d) -> map
+								 (* let size = get_arr_sz typ in
+								  let atype = ast_to_llvm_type t in
+								  let arr = L.build_array_malloc atype  "tmp" builder in
+								  let arr = L.build_pointercast arr (pointer_type atype) "tmp" builder in
+								  StringMap.add name arr map *)
+				|_ -> let local_var = L.build_alloca (ast_to_llvm_type typ) name builder in		
+							StringMap.add name local_var map
 		in
                 let params_list = List.map (fun (s,t) -> (t,s)) fdecl.S.func_parameters
                 in
@@ -76,13 +92,18 @@ let generate (sprog) =
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
-					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
+					 let actuals = (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
 											| _ -> e ^ "_result")
 				          in L.build_call fcode (Array.of_list actuals) result builder
 	
-		| S.S_Access(e, el,typ) ->
-			L.const_int i32_t 0
+		| S.S_Access(s, el,typ) ->
+			let index = gen_expression (List.hd el) builder in
+			let arr = gen_expression (S.S_Id(s,typ)) builder in
+			let v = L.build_gep arr [| index |] "tmp" builder in
+			L.build_load v "tmp" builder
+					
+			
 		| S.S_Binop(e1, op, e2,typ) ->
 			let left = gen_expression e1 builder
 			and right = gen_expression e2 builder in
@@ -111,9 +132,7 @@ let generate (sprog) =
 		| S.S_ArrayAssign(s, e1, e2, typ) ->
 			L.const_int i32_t 0		
 		| S.S_InitArray(s, el, typ) -> 	L.const_int i32_t 0	
-											(*let arr = L.build_alloca [e x (ast_to_llvm_type typ)] in
-											let pointer = L.bitcast L.pointer_type arr L.pointer_type (ast_to_llvm_type typ) in
-											L.build_call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([3 x i32]* @main.arr to i8* ), i64 12, i32 4, i1 false) *)
+
 		| S.S_ArrayLit(el, typ) -> L.const_int i32_t 0
 	
 		| S.S_Noexpr ->
@@ -212,10 +231,12 @@ let generate (sprog) =
 		| S.S_Break -> builder
                 | S.S_Continue -> builder
 			   	
-
 		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
-								let e' = gen_expression sexpr builder in 
-								ignore(L.build_store e' (lookup name) builder); ignore(e'); builder 
+								match typ with A.Array(t,il,d) -> builder	
+								| _ -> (match sexpr with S.S_Noexpr -> builder  
+									| _ -> let e' = gen_expression sexpr builder in 
+									ignore(L.build_store e' (lookup name) builder); 
+									ignore(e'); builder)
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder

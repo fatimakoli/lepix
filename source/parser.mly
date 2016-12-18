@@ -75,21 +75,18 @@ expr:
 | expr AND expr { Binop( $1, And, $3) }
 | expr OR expr { Binop( $1, Or, $3) }
 | ID ASSIGN expr { Assign($1, $3) }
-
+| ID LSQUARE args_list RSQUARE ASSIGN expr { ArrayAssign($1,$3,$6) }
 
 params_list: { [] }
 | ID COLON type_name { [($1,$3)] }
 | ID COLON type_name COMMA params_list { ($1,$3)::$5 }
 
 var_decl:
- VAR ID COLON type_name ASSIGN expr SEMI { VarDecl(($2,$4),$6) }
-| VAR ID COLON INT SEMI { VarDecl(($2,Int),IntLit(0)) }
-| VAR ID COLON FLOAT SEMI { VarDecl(($2,Float),FloatLit(0.0)) }
-| VAR ID COLON BOOL SEMI { VarDecl(($2,Bool),BoolLit(false)) }
-
+  VAR ID COLON type_name ASSIGN expr SEMI { VarDecl(($2,$4),$6) }
+| VAR ID COLON type_name SEMI { VarDecl(($2,$4),Noexpr) } 
 
 fun_decl:
-FUN ID LPAREN params_list RPAREN COLON type_name LBRACE statement_list RBRACE { { func_name=$2; func_parameters=$4; func_return_type=$7; func_body=$9} }
+FUN ID LPAREN params_list RPAREN COLON type_name LBRACE statement_list RBRACE { { func_name=$2; func_parameters= $4; func_return_type=$7; func_body=$9} }
 
 statement_list_builder: { [] }
 | statement_list_builder statement { $2::$1 }

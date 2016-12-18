@@ -98,7 +98,8 @@ and check_expr_list el typ env =
 and check_access s el env = 
 	let (typ,name) = find_variable env.scope s and
 	sexpr_list = check_expr_list el Int env in
-	S_Access(s,sexpr_list,typ)
+	match typ with Ast.Array(t,il,d) -> S_Access(s,sexpr_list,t)
+	| _ -> raise(SemanticException("Attempting array access in non-array"))
 and create_sexpr_list el env =
 	match el with  [] -> []
 	| hd::tl -> (check_expr hd env)::(create_sexpr_list tl env)
@@ -120,7 +121,7 @@ and check_call s el env =
 	S_Call(s,create_sexpr_list el env,sfunc.func_return_type)
 and check_array_assign s el e env = 
 	let (atype,var) = find_variable env.scope s in
-	let sexpr_index = check_expr_list el atype env and
+	let sexpr_index = check_expr_list el Int env and
 	sexpr_assign = check_expr e env	in
 	let assgn_type = get_expr_type sexpr_assign in
 	if assgn_type = atype then S_ArrayAssign(s,sexpr_index,sexpr_assign,assgn_type) 
@@ -192,7 +193,7 @@ and check_while e sl env =
 
 and check_var_decl name typ e env =
         let sexpr = check_expr e env in
-        let sexpr_typ = get_expr_type sexpr in
+        let sexpr_typ = get_expr_type sexpr in 
         if List.exists (fun (_,vname) -> vname = name) env.scope.vars
         then raise(SemanticException("Variable has already been declared"))
         else 
