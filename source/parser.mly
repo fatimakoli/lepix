@@ -44,7 +44,7 @@ type_name:
 | BOOL { Bool }
 | VOID { Void }
 | type_name LSQUARE RSQUARE { Array($1, 1) }
-| type_name LSQUARE LSQUARE RSQUARE RSQUARE { Array($1, 2) }
+| type_name LSQUARE LSQUARE RSQUARE RSQUARE { Array($1, 2)  }
 | type_name LSQUARE LSQUARE LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3) }
 
 expr:
