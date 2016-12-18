@@ -125,17 +125,44 @@ let generate (sprog) =
 		| S.S_Return(e, typ) -> ignore (match fdecl.S.func_return_type with A.Void -> L.build_ret_void builder
 								| _ -> L.build_ret (gen_expression e builder) builder); builder
 		| S.S_Block(sl) -> gen_stmt_list sl builder 
-		| S.S_If(e, true_sl, false_sl) -> let cond = gen_expression e builder in
-						  let merge_bb = L.append_block context "merge" func in
-						  let then_bb = L.append_block context "then" func in 
-						  add_terminal (gen_statement  (L.builder_at_end context then_bb) true_sl )
-                                                                (L.build_br then_bb);
-						  let else_bb = L.append_block context "else" func in 
-						  add_terminal (gen_statement (L.builder_at_end context else_bb) false_sl)
-								(L.build_br else_bb);
+		| S.S_If(e, then_expr, else_expr) -> let cond = gen_expression e builder in
+								let start_bb = L.insertion_block builder in
+								let func = L.block_parent start_bb in
+							 	let then_bb = L.append_block context "then" func in
+								L.position_at_end then_bb builder;
 
-						  ignore(L.build_cond_br cond then_bb else_bb builder);
-						  L.builder_at_end context merge_bb
+								let then_val = gen_statement builder then_expr in
+								let new_then_bb = L.insertion_block builder in  
+								let else_bb = L.append_block context "else" func in
+		                        L.position_at_end else_bb builder;
+								(* add_terminal (gen_statement  (L.builder_at_end context true_bb) then_stmt )
+		                                                            (L.build_br merge_bb); *)
+		                        
+		                        let else_val = gen_statement builder else_expr in
+		                        let new_else_bb = L.insertion_block builder in
+		                        let merge_bb = L.append_block context "ifcont" func in
+		                        L.position_at_end merge_bb builder;
+
+		                        (* let incoming = [(then_val, new_then_bb); (else_val, new_else_bb)] in
+		                        let phi = L.build_phi incoming "iftmp" builder in *)
+		                        let else_bb_val = L.value_of_block new_else_bb in
+		                        L.position_at_end start_bb builder;
+
+		                        ignore (L.build_cond_br cond then_bb else_bb builder);
+
+		                        L.position_at_end new_then_bb builder; ignore (L.build_br merge_bb builder);
+		                        L.position_at_end new_else_bb builder; ignore (L.build_br merge_bb builder);
+
+		                        L.position_at_end merge_bb builder;
+
+		                        (* phi *)
+		                    	else_bb_val; builder
+								(* let false_bb = L.append_block context "else" func in 
+								add_terminal (gen_statement (L.builder_at_end context false_bb) else_stmt)
+									(L.build_br merge_bb);
+
+								ignore(L.build_cond_br cond true_bb false_bb builder);
+								L.builder_at_end context merge_bb *)
 	(*
 		| S.S_For(inite, compe, incre, sl) -> gen_statement (S.S_Block [S.S_Expr(inite,A.Int); S.S_While (compe, 
 								S.S_Block [sl ; S.S_Expr(incre,A.Int)])]) builder
