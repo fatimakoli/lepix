@@ -12,7 +12,7 @@ type s_expr =
 |	S_Assign of string * s_expr * typ
 |	S_ArrayAssign of string * s_expr list * s_expr * typ
 |	S_ArrayLit of s_expr list * typ
-|	S_InitArray of string * s_expr list * s_expr * typ
+|	S_InitArray of string * s_expr list * typ
 |	S_Noexpr
 
 type s_var_decl
@@ -31,10 +31,10 @@ type s_stmt =
 
 type s_func_decl = {
 	func_name : string;
-	func_parameters : bind list;
+	func_parameters : (typ * string) list;
 	func_return_type : typ;
 	func_body : s_stmt list;
-	func_locals : bind list;	
+	func_locals : (typ * string * s_expr)  list;	
 }
 
 type s_decl = 
