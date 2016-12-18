@@ -93,8 +93,8 @@ let generate (sprog) =
 			|	      A.Equal -> L.build_icmp L.Icmp.Eq
 			|	      A.Neq -> L.build_icmp L.Icmp.Ne
 			|	      A.Less -> L.build_icmp L.Icmp.Slt
-			|             A.Leq -> L.build_icmp L.Icmp.Sle
-		        |             A.Greater -> L.build_icmp L.Icmp.Sgt
+			|         A.Leq -> L.build_icmp L.Icmp.Sle
+		    |         A.Greater -> L.build_icmp L.Icmp.Sgt
 			|	      A.Geq -> L.build_icmp L.Icmp.Sge
 			) left right "tmp" builder
 		| S.S_Unop(op, e1, typ) ->
@@ -213,8 +213,11 @@ let generate (sprog) =
 					let merge_bb = L.append_block context "merge" func in
 					ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
 					L.builder_at_end context merge_bb *)
-		| S.S_VarDecStmt(v) -> builder
-	
+		        	
+
+		| S.S_VarDecStmt(S_VarDecl((name,typ),sexpr)) -> 
+								let e' = gen_expression sexpr builder in 
+								ignore(L.build_store e' (lookup name) builder); e'; builder
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder
