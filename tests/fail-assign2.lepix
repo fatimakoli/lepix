@@ -1,4 +1,4 @@
-fun main() : int 
+fun main() : void
 {
   var i : int;
   var b : bool;

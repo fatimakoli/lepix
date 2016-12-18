@@ -6,8 +6,8 @@
 #  Compile and check the error of each expected-to-fail test
 
 # Path to the LLVM interpreter
-LLI="lli"
-# LLI="/usr/local/opt/llvm35/bin/lli-3.5"
+# LLI="lli"
+LLI="/usr/local/opt/llvm35/bin/lli-3.5"
 
 # Path to the lepix compiler.  Usually "./lepix.native"
 # Try "_build/lepix.native" if ocamlbuild was unable to create a symbolic link.
@@ -83,8 +83,6 @@ Check() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
-    # echo $reffile
-    # echo $basedir
 
     echo 1>&2
     echo "###### Testing $basename" 1>&2

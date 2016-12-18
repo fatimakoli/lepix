@@ -3,8 +3,8 @@ var b:bool;
 
 fun foo(c:int, d:bool) : void    
 {
-  var d :int;
-  var e :bool;
+  var e :int;
+  var f :bool;
   b + a; /* Error: bool + int */
 }
 

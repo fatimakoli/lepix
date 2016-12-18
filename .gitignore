@@ -2,6 +2,7 @@
 *.blg
 *.log
 *.aux
+*.diff
 *.out
 !tests/*.out
 *.err
