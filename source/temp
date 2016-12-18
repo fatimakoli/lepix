@@ -1,7 +1,6 @@
 fun main () : int
 {
-	var a : int;
-	a = 4;
+	var a : int = 4;
 	if(a == 5)
 	{
 		print(5);

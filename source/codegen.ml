@@ -93,8 +93,8 @@ let generate (sprog) =
 			|	      A.Equal -> L.build_icmp L.Icmp.Eq
 			|	      A.Neq -> L.build_icmp L.Icmp.Ne
 			|	      A.Less -> L.build_icmp L.Icmp.Slt
-			|             A.Leq -> L.build_icmp L.Icmp.Sle
-		        |             A.Greater -> L.build_icmp L.Icmp.Sgt
+			|         A.Leq -> L.build_icmp L.Icmp.Sle
+		    |         A.Greater -> L.build_icmp L.Icmp.Sgt
 			|	      A.Geq -> L.build_icmp L.Icmp.Sge
 			) left right "tmp" builder
 		| S.S_Unop(op, e1, typ) ->
@@ -160,27 +160,10 @@ let generate (sprog) =
 
 		                        (* phi *)
 		                    	else_bb_val; builder
-								(* let false_bb = L.append_block context "else" func in 
-								add_terminal (gen_statement (L.builder_at_end context false_bb) else_stmt)
-									(L.build_br merge_bb);
 
-								ignore(L.build_cond_br cond true_bb false_bb builder);
-								L.builder_at_end context merge_bb *)
-	(*
-		| S.S_For(inite, compe, incre, sl) -> gen_statement (S.S_Block [S.S_Expr(inite,A.Int); S.S_While (compe, 
-								S.S_Block [sl ; S.S_Expr(incre,A.Int)])]) builder
-		| S.S_While(expr, body) -> let pred_bb = L.append_block context "while" func in
-						       ignore(L.build_br pred_bb builder);
-					 let body_bb = L.append_block context "while_bod" func in
-				 	 add_terminal (gen_statement body (L.builder_at_end context body_bb)) (L.build_br pred_bb);
-				
-					let pred_builder = L.builder_at_end context pred_bb in
-					let bool_val = gen_expression expr pred_builder in
-					let merge_bb = L.append_block context "merge" func in
-					ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
-					L.builder_at_end context merge_bb*) 
-		| S.S_VarDecStmt(v) -> builder
-	
+		| S.S_VarDecStmt(S_VarDecl((name,typ),sexpr)) -> 
+								let e' = gen_expression sexpr builder in 
+								ignore(L.build_store e' (lookup name) builder); e'; builder
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder
