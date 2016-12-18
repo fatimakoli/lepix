@@ -188,7 +188,7 @@ and check_while e sl env =
 	let sexpr = check_expr e env
 	in let sexpr_typ = get_expr_type sexpr
 	in let s = check_stmt sl env in 
-	if sexpr_typ <> Bool && sexpr_typ <> Int then raise(SemanticException("While condition has invalid type"))
+	if sexpr_typ <> Bool then raise(SemanticException("While condition has invalid type"))
 	else S_While(sexpr,s)
 
 and check_var_decl name typ e env =
