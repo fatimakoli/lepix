@@ -1,16 +1,13 @@
-fun func(x:int, y:int): int
+fun printem(a:int, b:int, c:int, d:int): void
 {
-  return 0;
+  print(a);
+  print(b);
+  print(c);
+  print(d);
 }
 
 fun main(): int
 {
-  var i : int;
-  i = 1;
-
-  func(i = i+2, i = 5);
-
-  print(i);
+  printem(42,17,192,8);
   return 0;
 }
-

@@ -92,7 +92,7 @@ let generate (sprog) =
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
-					 let actuals = (List.map (fun s -> gen_expression s builder) (List.rev el) )in
+					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
 											| _ -> e ^ "_result")
 				          in L.build_call fcode (Array.of_list actuals) result builder
