@@ -3,15 +3,17 @@ module A = Ast
 module S = Semast
 module StringMap = Map.Make(String)
 
+exception CodegenError of string
+
 let generate (sprog) =
 	let context = L.global_context () in
 	let _le_module = L.create_module context "Lepix"
 	and f32_t   = L.float_type   context
-	and f64_t   = L.double_type  context
+(*	and f64_t   = L.double_type  context *)
 	and i8_t    = L.i8_type      context
-	and char_t  = L.i8_type      context
+(*	and char_t  = L.i8_type      context *)
 	and i32_t   = L.i32_type     context
-	and i64_t   = L.i64_type     context
+(*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
 	and void_t  = L.void_type    context in	
 	let rec ast_to_llvm_type = function
@@ -21,8 +23,9 @@ let generate (sprog) =
 		| A.Void -> void_t
 		| A.Array(t, il, d) -> let sz = match d with 1 -> (List.nth il 0) 
 							     | 2 -> (List.nth il 1) * (List.nth il 1)
-						             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0) 
-							     in L.array_type (ast_to_llvm_type t) d
+						             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0)
+							     | _ -> raise(CodegenError("Too many dimensions"))
+							     in L.array_type (ast_to_llvm_type t) sz
 	in
 	let global_vars = 
 		let global_var map (typ,name) = 
@@ -114,7 +117,7 @@ let generate (sprog) =
 		| S.S_ArrayLit(el, typ) -> L.const_int i32_t 0
 	
 		| S.S_Noexpr ->
-			L.const_int i32_t 0
+			L.const_int i32_t 0	
 
 	in
         let add_terminal builder e =
@@ -134,14 +137,14 @@ let generate (sprog) =
 							 	let then_bb = L.append_block context "then" func in
 								L.position_at_end then_bb builder;
 
-								let then_val = gen_statement builder then_expr in
+								let _ = gen_statement builder then_expr in
 								let new_then_bb = L.insertion_block builder in  
 								let else_bb = L.append_block context "else" func in
 		                        L.position_at_end else_bb builder;
 								(* add_terminal (gen_statement  (L.builder_at_end context true_bb) then_stmt )
 		                                                            (L.build_br merge_bb); *)
 		                        
-		                        let else_val = gen_statement builder else_expr in
+		                        let _ = gen_statement builder else_expr in
 		                        let new_else_bb = L.insertion_block builder in
 		                        let merge_bb = L.append_block context "ifcont" func in
 		                        L.position_at_end merge_bb builder;
@@ -205,11 +208,14 @@ let generate (sprog) =
 
 		| S.S_While(expr, body) -> let null_expr = S.S_IntLit(0) in
 					   gen_statement builder (S.S_For(null_expr,expr,null_expr,body))
-					   	
+	
+		| S.S_Break -> builder
+                | S.S_Continue -> builder
+			   	
 
 		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
 								let e' = gen_expression sexpr builder in 
-								ignore(L.build_store e' (lookup name) builder); e'; builder
+								ignore(L.build_store e' (lookup name) builder); ignore(e'); builder 
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder

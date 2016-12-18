@@ -256,10 +256,13 @@ let check_decl env prog =
                 let vars = List.filter (fun decl ->  match decl with Var(vdecl) -> true | _ -> false) prog
 		and funs = List.filter (fun decl -> match decl with Func(decl) -> true | _ -> false) prog
 		in 
-		let globs = List.map (fun x -> match x with Var(vdecl) -> check_stmt (VarDecStmt(vdecl)) env ) vars 
-		and fdcls = List.map (fun x -> match x with Func(fdecl) -> check_func_decl fdecl env) funs
+		let globs = List.map (fun x -> match x with Var(vdecl) -> check_stmt (VarDecStmt(vdecl)) env
+						            | _ -> raise(SemanticException("Func in vardecls list")) ) vars 
+		and fdcls = List.map (fun x -> match x with Func(fdecl) -> check_func_decl fdecl env
+							    | _ -> raise(SemanticException("Var in funcdecls list")) ) funs
 		in
-		{ Semast.globals = List.map (fun x -> (match x with S_VarDecStmt(S_VarDecl((s,t),e)) -> (t,s,e))) globs;
+		{ Semast.globals = List.map (fun x -> match x with S_VarDecStmt(S_VarDecl((s,t),e)) -> (t,s,e)
+							    | _ -> raise(SemanticException("Var in funcdecls list")) ) globs;
 		  Semast.functions = fdcls 
 		}
 
