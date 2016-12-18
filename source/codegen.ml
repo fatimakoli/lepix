@@ -93,8 +93,8 @@ let generate (sprog) =
 			|	      A.Equal -> L.build_icmp L.Icmp.Eq
 			|	      A.Neq -> L.build_icmp L.Icmp.Ne
 			|	      A.Less -> L.build_icmp L.Icmp.Slt
-			|             A.Leq -> L.build_icmp L.Icmp.Sle
-		        |             A.Greater -> L.build_icmp L.Icmp.Sgt
+			|         A.Leq -> L.build_icmp L.Icmp.Sle
+		    |         A.Greater -> L.build_icmp L.Icmp.Sgt
 			|	      A.Geq -> L.build_icmp L.Icmp.Sge
 			) left right "tmp" builder
 		| S.S_Unop(op, e1, typ) ->
@@ -159,16 +159,50 @@ let generate (sprog) =
 		                        L.position_at_end merge_bb builder;
 
 		                        (* phi *)
-		                    	else_bb_val; builder
+		                    	ignore(else_bb_val); builder
 								(* let false_bb = L.append_block context "else" func in 
 								add_terminal (gen_statement (L.builder_at_end context false_bb) else_stmt)
 									(L.build_br merge_bb);
 
 								ignore(L.build_cond_br cond true_bb false_bb builder);
 								L.builder_at_end context merge_bb *)
-	(*
-		| S.S_For(inite, compe, incre, sl) -> gen_statement (S.S_Block [S.S_Expr(inite,A.Int); S.S_While (compe, 
-								S.S_Block [sl ; S.S_Expr(incre,A.Int)])]) builder
+	
+		| S.S_For(inite, compe, incre, sl) ->	
+				                      let the_function = L.block_parent (L.insertion_block builder) in
+						      let _ = gen_expression inite builder in
+						      let loop_bb = L.append_block context "loop" the_function in
+						      let inc_bb = L.append_block context "inc" the_function in
+						      let cond_bb = L.append_block context "cond" the_function in
+				                      let after_bb = L.append_block context "afterloop" the_function in
+
+						      
+						      
+						 
+						 
+						      ignore(L.build_br cond_bb builder);
+					              L.position_at_end loop_bb builder;
+					              ignore(gen_statement builder sl);
+
+						      let bb = L.insertion_block builder in
+					              L.move_block_after bb inc_bb;
+		                                      L.move_block_after inc_bb cond_bb;
+						      L.move_block_after cond_bb after_bb;
+                                                      ignore(L.build_br inc_bb builder);
+
+						      L.position_at_end inc_bb builder;
+						      let _ = gen_expression incre builder in
+						      ignore(L.build_br cond_bb builder);
+
+						      L.position_at_end cond_bb builder;
+
+						      let cond_val = gen_expression compe builder in
+						      ignore(L.build_cond_br cond_val loop_bb after_bb builder);
+
+						      L.position_at_end after_bb builder;
+						      
+						  
+						      builder;
+							(*	
 		| S.S_While(expr, body) -> let pred_bb = L.append_block context "while" func in
 						       ignore(L.build_br pred_bb builder);
 					 let body_bb = L.append_block context "while_bod" func in
@@ -178,9 +212,12 @@ let generate (sprog) =
 					let bool_val = gen_expression expr pred_builder in
 					let merge_bb = L.append_block context "merge" func in
 					ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
-					L.builder_at_end context merge_bb*) 
-		| S.S_VarDecStmt(v) -> builder
-	
+					L.builder_at_end context merge_bb *)
+		        	
+
+		| S.S_VarDecStmt(S_VarDecl((name,typ),sexpr)) -> 
+								let e' = gen_expression sexpr builder in 
+								ignore(L.build_store e' (lookup name) builder); e'; builder
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder
