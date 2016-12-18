@@ -7,7 +7,7 @@ before_install:
      - sudo apt-get update -qq
      - sudo apt-get install ocaml menhir
      - sudo apt-get install opam
-     - opam init
+     - echo 'y' | opam init
      - eval `opam config env`
      - opam install llvm3.4 ocamlfind
 
