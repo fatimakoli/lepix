@@ -202,20 +202,12 @@ let generate (sprog) =
 						      
 						  
 						      builder;
-							(*	
-		| S.S_While(expr, body) -> let pred_bb = L.append_block context "while" func in
-						       ignore(L.build_br pred_bb builder);
-					 let body_bb = L.append_block context "while_bod" func in
-				 	 add_terminal (gen_statement body (L.builder_at_end context body_bb)) (L.build_br pred_bb);
-				
-					let pred_builder = L.builder_at_end context pred_bb in
-					let bool_val = gen_expression expr pred_builder in
-					let merge_bb = L.append_block context "merge" func in
-					ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
-					L.builder_at_end context merge_bb *)
-		        	
 
-		| S.S_VarDecStmt(S_VarDecl((name,typ),sexpr)) -> 
+		| S.S_While(expr, body) -> let null_expr = S.S_IntLit(0) in
+					   gen_statement builder (S.S_For(null_expr,expr,null_expr,body))
+					   	
+
+		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
 								let e' = gen_expression sexpr builder in 
 								ignore(L.build_store e' (lookup name) builder); e'; builder
 	and 

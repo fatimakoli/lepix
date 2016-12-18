@@ -1,9 +1,10 @@
 fun main() : int 
 {
-  while (var i = 5; i > 0) {
-    lib.print(i);
+ var i : int = 5;
+  while (i > 0) {
+    print(i);
     i = i - 1;
   }
-  lib.print(42);
+  print(42);
   return 0;
 }
