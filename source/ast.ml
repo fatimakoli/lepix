@@ -10,7 +10,7 @@ type typ =
 	| Bool 
 	| Void 
 	| Float 
-	| Array of typ * int (* * int * int * int  *)
+	| Array of typ * int list * int 
 
 type bind = string * typ
 
@@ -107,7 +107,7 @@ let rec string_of_typ = function
 	| Bool -> "bool"
 	| Void -> "void"
 	| Float -> "float"
-	| Array(t, d) -> string_of_typ t ^ ( String.make d '[' ) ^ ( String.make d ']' )
+	| Array(t, il, d) -> string_of_typ t ^ ( String.make d '[' ) ^ ( String.make d ']' )
 
 let rec string_of_bind = function
 	| (str, typ) -> str ^ " : " ^ string_of_typ typ
