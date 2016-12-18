@@ -3,6 +3,7 @@
 *.log
 *.aux
 *.diff
+*.swp
 *.out
 !tests/*.out
 *.err
