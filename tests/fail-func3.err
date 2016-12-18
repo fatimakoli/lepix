@@ -1,1 +1,1 @@
-Assertion failed: (isValidArgumentType(Params[i]) && "Not a valid type for function argument!"), function FunctionType, file Type.cpp, line 346.
+Fatal error: exception Semant.SemanticException("Void type for func arg")

@@ -5,6 +5,15 @@ open Semast
 
 exception SemanticException of string
 
+let rec check_dup l = match l with [] -> false 
+                                  | hd::tl -> let x = (List.filter (fun x -> x = hd) tl ) in
+                                  if (x == []) then
+                                        check_dup tl
+                                  else
+                                        true
+let rec list_if_uniq l = if (check_dup l) then raise(SemanticException("Duplicate arg names in func")) else l
+
+
 let rec find_variable scope name = 
 	try 
 		List.find (fun (_,s) -> s = name) scope.vars
@@ -200,10 +209,12 @@ let check_func_decl (fdecl : Ast.func_decl) env =
 		in	
 		if (fdecl.func_return_type = Void || 
 			List.exists (fun x -> match x with Return(e) -> true | _ -> false) fdecl.func_body) 
-		then let sfbody = List.map (fun s -> check_stmt s f_env) fdecl.func_body in
+		then let sfbody = List.map (fun s -> check_stmt s f_env) fdecl.func_body in	
 		let sfdecl = {Semast.func_name = fdecl.func_name; 
 						Semast.func_return_type = fdecl.func_return_type;
-						Semast.func_parameters = List.map (fun (a,b) -> (b,a)) fdecl.func_parameters; 
+						Semast.func_parameters = List.map (fun (a,b) -> match b with 
+									 Void -> raise(SemanticException("Void type for func arg"))
+										   |_ -> (b,a))  (list_if_uniq fdecl.func_parameters);	
 						Semast.func_body = sfbody;
 						Semast.func_locals = List.map (fun x -> 
 										match x with 
