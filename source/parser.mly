@@ -36,7 +36,7 @@ let reverse_list l =
 
 args_list: { [] }
 | expr { [$1] }
-|  args_list COMMA expr { $3::$1 }
+|  args_list COMMA expr {  $3::$1 }
 
 int_list :
 | INTLITERAL { [$1] }
@@ -52,14 +52,14 @@ type_name:
 | type_name LSQUARE LSQUARE LSQUARE int_list RSQUARE RSQUARE RSQUARE { Array($1, $5, 3) }
 
 expr:
- INTLITERAL { IntLit($1) }
+| INTLITERAL { IntLit($1) }
 | FLOATLITERAL { FloatLit($1) }
 | TRUE { BoolLit(true) }
 | FALSE { BoolLit(false) }
 | ID { Id($1) }
-| LSQUARE args_list RSQUARE { ArrayLit($2) }
-| ID LSQUARE args_list RSQUARE { Access($1,$3)  }
-| ID LPAREN args_list RPAREN  { Call($1,$3)  }
+| LSQUARE args_list RSQUARE { ArrayLit(List.rev $2) }
+| ID LSQUARE args_list RSQUARE { Access($1,List.rev $3)  }
+| ID LPAREN args_list RPAREN  { Call($1,List.rev $3)  }
 | MINUS expr %prec NEG { Unop( Neg, $2) }
 | NOT expr { Unop( Not, $2) }
 | expr TIMES expr { Binop( $1, Mult, $3) }
