@@ -19,7 +19,10 @@ let generate (sprog) =
 		| A.Int -> i32_t
 		| A.Float -> f32_t
 		| A.Void -> void_t
-		| A.Array(t, d) -> L.array_type (ast_to_llvm_type t) d
+		| A.Array(t, il, d) -> let sz = match d with 1 -> (List.nth il 0) 
+							     | 2 -> (List.nth il 1) * (List.nth il 1)
+						             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0) 
+							     in L.array_type (ast_to_llvm_type t) d
 	in
 	let global_vars = 
 		let global_var map (typ,name) = 

@@ -38,14 +38,18 @@ args_list: { [] }
 | expr { [$1] }
 |  args_list COMMA expr { $3::$1 }
 
+int_list :
+| INTLITERAL { [$1] }
+| int_list COMMA INTLITERAL { $3::$1 }
+
 type_name:
 | INT { Int }
 | FLOAT { Float }
 | BOOL { Bool }
 | VOID { Void }
-| type_name LSQUARE RSQUARE { Array($1, 1) }
-| type_name LSQUARE LSQUARE RSQUARE RSQUARE { Array($1, 2)  }
-| type_name LSQUARE LSQUARE LSQUARE RSQUARE RSQUARE RSQUARE { Array($1, 3) }
+| type_name LSQUARE int_list RSQUARE{ Array($1, $3 , 1) }
+| type_name LSQUARE LSQUARE int_list RSQUARE RSQUARE { Array($1, $4, 2) }
+| type_name LSQUARE LSQUARE LSQUARE int_list RSQUARE RSQUARE RSQUARE { Array($1, $5, 3) }
 
 expr:
  INTLITERAL { IntLit($1) }
