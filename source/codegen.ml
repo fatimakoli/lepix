@@ -83,7 +83,9 @@ let generate (sprog) =
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
 											| _ -> e ^ "_result")
 				          in L.build_call fcode (Array.of_list actuals) result builder
-	
+		| S.S_ArrayLit(el,typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list (List.map (fun x -> 
+											gen_expression x builder) el))
+													
 		| S.S_Access(s, el,typ) ->
 			let index = gen_expression (List.hd el) builder in
 			let arr = gen_expression (S.S_Id(s,typ)) builder in
@@ -219,7 +221,10 @@ let generate (sprog) =
                 | S.S_Continue -> builder
 			   	
 		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
-								match typ with A.Array(t,il,d) -> builder	
+								match typ with A.Array(t,il,d) -> 
+									let e' = gen_expression sexpr builder
+									in ignore(L.build_store e' (lookup name) builder );
+									ignore(e'); builder 
 								| _ -> (match sexpr with S.S_Noexpr -> builder  
 									| _ -> let e' = gen_expression sexpr builder in 
 									ignore(L.build_store e' (lookup name) builder); 
