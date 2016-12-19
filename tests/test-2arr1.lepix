@@ -1,0 +1,20 @@
+fun main(): int
+{
+	var arr : int[[4,3]];
+
+	var i:int;
+	var j:int;
+	for(i = 0; i<4; i=i+1)
+	{
+		for(j = 0; j<3; j=j+1)
+		{
+			print(88888);
+			print(i);
+			print(j);
+			print(i+j);
+			arr[i,j] = i+j;
+			print(arr[i,j]);
+		}
+	}
+	return 0;
+}

@@ -1,0 +1,13 @@
+fun main(): int
+{
+	var arr : int[12];
+
+	var i:int;
+	for(i = 0; i<12; i=i+1)
+	{
+		arr[i] = i;
+		print(arr[i]);
+	}
+
+	return 0;
+}
