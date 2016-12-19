@@ -1,4 +1,4 @@
-; ModuleID = 'array_2d.ll'
+; ModuleID = 'array_2d.c'
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-pc-linux-gnu"
 
@@ -11,9 +11,9 @@ define i32 @main() #0 {
   store i32 0, i32* %1, align 4
   %2 = bitcast [2 x [5 x i32]]* %x to i8*
   call void @llvm.memcpy.p0i8.p0i8.i64(i8* %2, i8* bitcast ([2 x [5 x i32]]* @main.x to i8*), i64 40, i32 16, i1 false)
-  %3 = getelementptr inbounds [2 x [5 x i32]], [2 x [5 x i32]]* %x, i64 0, i64 0
-  %4 = getelementptr inbounds [5 x i32], [5 x i32]* %3, i64 0, i64 0
-  store i32 7, i32* %4, align 16
+  %3 = getelementptr inbounds [2 x [5 x i32]], [2 x [5 x i32]]* %x, i64 0, i64 1
+  %4 = getelementptr inbounds [5 x i32], [5 x i32]* %3, i64 0, i64 3
+  store i32 7, i32* %4, align 4
   ret i32 0
 }
 

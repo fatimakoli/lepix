@@ -15,18 +15,19 @@ let generate (sprog) =
 	and i32_t   = L.i32_type     context
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
-	and void_t  = L.void_type    context in
+	and void_t  = L.void_type    context in	
 
+	let compute_array_index d il = match d with 1 -> (List.nth il 0)
+			 				| 2 -> (List.nth il 0) * (List.nth il 1)
+							| 3-> (List.nth il 0) * (List.nth il 1) * (List.nth il 2)
+							| _ -> raise(CodegenError("Too many dimensions"))
+	in
 	let rec ast_to_llvm_type = function
 		| A.Bool -> bool_t
 		| A.Int -> i32_t
 		| A.Float -> f32_t
 		| A.Void -> void_t
-		| A.Array(t, il, d) -> let sz = match d with 1 -> (List.nth il 0) 
-							     | 2 -> (List.nth il 1) * (List.nth il 1)
-						             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0)
-							     | _ -> raise(CodegenError("Too many dimensions"))
-							     in L.array_type (ast_to_llvm_type t) sz
+		| A.Array(t, il, d) -> L.array_type (ast_to_llvm_type t) (compute_array_index d il)
 	in
 	let global_vars = 
 		let global_var map (typ,name) = 
@@ -91,11 +92,24 @@ let generate (sprog) =
 		| S.S_ArrayLit(el,typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list (List.map (fun x -> 
 											gen_expression x builder) el))
 													
-		| S.S_Access(s, el,typ) ->  let index = gen_expression (List.hd el) builder in
-					    let index = L.build_add index (L.const_int i32_t 0) "tmp" builder in
-					    let value = L.build_gep (lookup s) [| (L.const_int i32_t 0); index; |] "tmp" builder
-					    in 
-				 	    L.build_load value "tmp" builder;
+		| S.S_Access(s, el,typ,A.Array(t,il,d)) -> (match d with 1 ->  let index = gen_expression (List.hd el) builder in
+					    			 let index = L.build_add index (L.const_int i32_t 0) "tmp" builder in
+					    			  let value = L.build_gep (lookup s) 
+								  [| (L.const_int i32_t 0); index; |] "tmp" builder
+								 in L.build_load value "tmp" builder
+
+							| 2 -> let indexlist = List.map (fun x -> gen_expression x builder) el in
+								let index = L.build_add (L.const_int i32_t 0) 
+											(List.nth indexlist 1) "tmp" builder in
+								let rows = L.build_mul (List.nth indexlist 0)  (L.const_int i32_t 
+													(List.nth il 1)) "tmp2" builder
+								in let index = L.build_add index rows "tmp" builder in  
+								 let value = L.build_gep (lookup s)
+								  [| (L.const_int i32_t 0); index |] "tmp" builder
+								 in L.build_load value "tmp" builder
+ 
+							| _ -> raise(CodegenError("Invalid dim number"))	
+				 	    	)
 		| S.S_Binop(e1, op, e2,A.Float) ->
                         let left = gen_expression e1 builder
                         and right = gen_expression e2 builder in
@@ -241,7 +255,8 @@ let generate (sprog) =
                 | S.S_Continue -> builder
 			   	
 		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
-								match typ with A.Array(t,il,d) -> 
+								match typ with A.Array(t,il,d) -> if sexpr = S.S_Noexpr then builder
+									else 
 									let e' = gen_expression sexpr builder
 									in ignore(L.build_store e' (lookup name) builder );
 									ignore(e'); builder 
