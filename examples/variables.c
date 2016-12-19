@@ -19,6 +19,7 @@ int main () {
 	// b == 6
 	c[2] = b;
 	// c[2] == 6
+	b = c[1];
 
 	return 0;
 
