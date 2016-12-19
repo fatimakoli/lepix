@@ -97,7 +97,7 @@ Check() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
-    size=`echo $((${#basename} + 3))`
+    size=`echo $((${#basename} + 4))`
     size=`echo $(($size/8))`
 
     echo 1>&2
@@ -137,7 +137,7 @@ CheckFail() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
-    size=`echo $((${#basename} + 3))`
+    size=`echo $((${#basename} + 4))`
     size=`echo $(($size/8))`
 
     echo 1>&2
