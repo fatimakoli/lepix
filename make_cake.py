@@ -7,17 +7,18 @@ December 19, 2016
 
 Makes cake. Delicious!
 """
+import sys
 
 def make_cake():
     # sets the maximum length of the buffer, which is 3072 for this assignment
     BUFFERMAX = 3072
     # asks user for image file
     print("WARNING: DO NOT MAKE CAKE CAKE")
-    oldfile = raw_input("Enter name of image file (filename.ppm): ")
+    # oldfile = raw_input("Enter name of image file (filename.ppm): ")
 
     # opens image file to be edited and creates new image file where
     # lepix array literal is saved
-    infile = open(oldfile, 'r')
+    infile = open(sys.argv[1], 'r')
     outfile = open("lepix1darr.txt", 'w')
     buffer = [] # buffer array
 
