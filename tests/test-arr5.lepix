@@ -1,0 +1,9 @@
+fun main():int {
+	var arr: bool[4] = [true, true, false, false];
+	
+	var i:int;
+	for(i=0; i<4; i = i+1) {
+		printb(arr[i]);
+	}
+	return 0;
+}
