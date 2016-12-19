@@ -244,7 +244,20 @@ let create_environment =
 			   Semast.func_parameters = [(Int,"a")];
 			   Semast.func_body = [];
 			   Semast.func_locals = [];
-			};]
+			};
+			 { Semast.func_return_type = Void;
+			   Semast.func_name = "printb";
+			   Semast.func_parameters = [(Bool,"a")];
+			   Semast.func_body = [];
+			   Semast.func_locals = [];
+			};
+			 { Semast.func_return_type = Void;
+			   Semast.func_name = "printf";
+			   Semast.func_parameters = [(Float,"a")];
+			   Semast.func_body = [];
+			   Semast.func_locals = [];
+			 };]  
+
 	in
         let new_scope = { parent_scope = None; vars = [];} in
         {
