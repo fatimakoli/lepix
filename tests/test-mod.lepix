@@ -1,0 +1,15 @@
+fun mod(num:int, denom:int): int {
+	var multiplier:int = num/denom;
+	return num - denom * multiplier;
+}
+
+fun main(): int {
+	print(mod(32, 6));
+	print(mod(40, 8));
+	print(mod(46, 10));
+	print(mod(57, 25));
+	print(mod(34, 6));
+	print(mod(97, 5));
+	print(mod(17, 10));
+	return 0;
+}

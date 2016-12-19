@@ -1,8 +1,8 @@
-var i:bool = false;
+var i:bool = true;
 
 fun foo(a:int): void  {
-	var i:bool = true; /* local i, should ignore global i */
-	if(i) {
+	var i:bool = false; /* local i, should ignore global i */
+	if(!i) {
 		printb(i);
 		print(a);
 	}

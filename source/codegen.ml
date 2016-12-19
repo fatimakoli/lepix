@@ -11,7 +11,7 @@ let generate (sprog) =
 	and f32_t   = L.float_type   context
 (*	and f64_t   = L.double_type  context *)
 	and i8_t    = L.i8_type      context
-	and char_t  = L.i8_type      context 
+(*	and char_t  = L.i8_type      context *) 
 	and i32_t   = L.i32_type     context
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
@@ -91,12 +91,11 @@ let generate (sprog) =
 		| S.S_ArrayLit(el,typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list (List.map (fun x -> 
 											gen_expression x builder) el))
 													
-		| S.S_Access(s, el,typ) ->
-			let index = gen_expression (List.hd el) builder in
-			let arr = gen_expression (S.S_Id(s,typ)) builder in
-			let v = L.build_gep arr [| index |] "tmp" builder in
-			L.build_load v "tmp" builder
-					
+		| S.S_Access(s, el,typ) ->  let index = gen_expression (List.hd el) builder in
+					    let index = L.build_add index (L.const_int i32_t 0) "tmp" builder in
+					    let value = L.build_gep (lookup s) [| index |] "tmp" builder
+					    in 
+				 	    L.build_load value s builder;
 			
 		| S.S_Binop(e1, op, e2,typ) ->
 			let left = gen_expression e1 builder
@@ -127,7 +126,8 @@ let generate (sprog) =
 			L.const_int i32_t 0		
 		| S.S_InitArray(s, el, typ) -> 	L.const_int i32_t 0	
 
-		| S.S_ArrayLit(el, typ) -> L.const_int i32_t 0
+		| S.S_ArrayLit(el, typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list 
+								(List.map (fun x-> gen_expression x builder) el))
 	
 		| S.S_Noexpr ->
 			L.const_int i32_t 0	
@@ -237,16 +237,15 @@ let generate (sprog) =
 	and 
 	gen_stmt_list sl builder = 
 		match sl with [] -> builder
-
 			   |  hd::[] -> gen_statement builder hd
-			   |  hd::tl -> ignore(gen_statement builder hd); gen_stmt_list tl builder 
+			   |  hd::tl -> ignore(gen_statement builder hd); gen_stmt_list tl builder
 	in
 	let builder = gen_statement builder (S.S_Block fdecl.S.func_body) in 
 
 	add_terminal builder (match fdecl.S.func_return_type with A.Void -> L.build_ret_void
 
 				| t -> L.build_ret (L.const_int (ast_to_llvm_type t) 0))
-	in
-	List.iter function_body sprog.S.functions;
+	in	
+	List.iter function_body sprog.S.functions;	
 	_le_module 
 
