@@ -178,7 +178,7 @@ and check_for e1 e2 e3 sl env =
 	in let t3 = get_expr_type sexpr3
 	in if t1 <> Int && t1 <> Void then
 		raise( SemanticException("For loop first expr of invalid type"))
-	else (if t2 <> Bool && t2 <> Int then 
+	else (if t2 <> Bool then 
 		raise (SemanticException("For loop second expr not of type bool"))
 	else (if t3 <> Int then
 		raise (SemanticException("For loop third expr not of type int"))
