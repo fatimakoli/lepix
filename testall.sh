@@ -218,4 +218,9 @@ do
     esac
 done
 
+if [ $globalerror -eq 0 ] ; then
+    echo "\n${GREEN}(⌐■_■)${NC}"
+else
+    echo "\n${RED}( ∙_∙)>⌐■-■ ${NC}"
+fi
 exit $globalerror

@@ -93,27 +93,42 @@ let generate (sprog) =
 													
 		| S.S_Access(s, el,typ) ->  let index = gen_expression (List.hd el) builder in
 					    let index = L.build_add index (L.const_int i32_t 0) "tmp" builder in
-					    let value = L.build_gep (lookup s) [| index |] "tmp" builder
+					    let value = L.build_gep (lookup s) [| (L.const_int i32_t 0); index; |] "tmp" builder
 					    in 
-				 	    L.build_load value s builder;
-			
+				 	    L.build_load value "tmp" builder;
+		| S.S_Binop(e1, op, e2,A.Float) ->
+                        let left = gen_expression e1 builder
+                        and right = gen_expression e2 builder in
+                        (
+                        match op with A.Add -> L.build_fadd
+                        |             A.Sub -> L.build_fsub
+                        |             A.Mult -> L.build_fmul
+                        |             A.Div -> L.build_fdiv 
+                        |             A.Equal -> L.build_fcmp L.Fcmp.Ueq
+                        |             A.Neq -> L.build_fcmp L.Fcmp.Une
+                        |             A.Less -> L.build_fcmp L.Fcmp.Ult
+                        |         A.Leq -> L.build_fcmp L.Fcmp.Ule
+                    	|         A.Greater -> L.build_fcmp L.Fcmp.Ugt
+                        |             A.Geq -> L.build_fcmp L.Fcmp.Uge
+			| _ -> raise(CodegenError("Invalid operator for floats"))
+                        ) left right "tmp" builder
 		| S.S_Binop(e1, op, e2,typ) ->
-			let left = gen_expression e1 builder
-			and right = gen_expression e2 builder in
-			(
-			match op with A.Add -> L.build_add
-			|	      A.Sub -> L.build_sub
-			|	      A.Mult -> L.build_mul 
-			|	      A.Div -> L.build_sdiv
-			|	      A.And -> L.build_and
-			|	      A.Or -> L.build_or
-			|	      A.Equal -> L.build_icmp L.Icmp.Eq
-			|	      A.Neq -> L.build_icmp L.Icmp.Ne
-			|	      A.Less -> L.build_icmp L.Icmp.Slt
-			|         A.Leq -> L.build_icmp L.Icmp.Sle
-		    |         A.Greater -> L.build_icmp L.Icmp.Sgt
-			|	      A.Geq -> L.build_icmp L.Icmp.Sge
-			) left right "tmp" builder
+                        let left = gen_expression e1 builder
+                        and right = gen_expression e2 builder in
+                        (
+                        match op with A.Add -> L.build_add
+                        |             A.Sub -> L.build_sub
+                        |             A.Mult -> L.build_mul
+                        |             A.Div -> L.build_sdiv
+                        |             A.And -> L.build_and
+                        |             A.Or -> L.build_or
+                        |             A.Equal -> L.build_icmp L.Icmp.Eq
+                        |             A.Neq -> L.build_icmp L.Icmp.Ne
+                        |             A.Less -> L.build_icmp L.Icmp.Slt
+                        |         A.Leq -> L.build_icmp L.Icmp.Sle
+                        |         A.Greater -> L.build_icmp L.Icmp.Sgt
+                        |             A.Geq -> L.build_icmp L.Icmp.Sge
+                        ) left right "tmp" builder
 		| S.S_Unop(op, e1, typ) ->
 			let exp = gen_expression  e1 builder in
 			(
@@ -123,14 +138,15 @@ let generate (sprog) =
 		| S.S_Assign(s, e, typ) -> let e' = gen_expression e builder in ignore(L.build_store e' (lookup s) builder); e'
 							
 		| S.S_ArrayAssign(s, e1, e2, typ) ->
-			L.const_int i32_t 0		
-		| S.S_InitArray(s, el, typ) -> 	L.const_int i32_t 0	
+			L.const_int i32_t 0			
 
 		| S.S_ArrayLit(el, typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list 
 								(List.map (fun x-> gen_expression x builder) el))
 	
 		| S.S_Noexpr ->
-			L.const_int i32_t 0	
+			L.const_int i32_t 0
+
+		| _ -> L.const_int i32_t 0	
 
 	in
         let add_terminal builder e =
@@ -215,8 +231,7 @@ let generate (sprog) =
 						      ignore(L.build_cond_br cond_val loop_bb after_bb builder);
 
 						      L.position_at_end after_bb builder;
-						      
-						  
+						      				  
 						      builder;
 
 		| S.S_While(expr, body) -> let null_expr = S.S_IntLit(0) in
