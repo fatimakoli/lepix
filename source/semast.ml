@@ -10,7 +10,7 @@ type s_expr =
 |	S_Binop of s_expr * op * s_expr * typ
 |	S_Unop of uop * s_expr * typ
 |	S_Assign of string * s_expr * typ
-|	S_ArrayAssign of string * s_expr list * s_expr * typ
+|	S_ArrayAssign of string * s_expr list * s_expr * typ * typ
 |	S_ArrayLit of s_expr list * typ
 |	S_InitArray of string * s_expr list * typ
 |	S_Noexpr

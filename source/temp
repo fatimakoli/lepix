@@ -10,9 +10,8 @@ fun sqrt(a:int): float {
 fun main() : int
 {
 
-	printf(sqrt(4));
-	var a : int[[2,2]] = [1,2,3,4];
-	print(a[1,1]);
-
+	var a : int[5] = [1,2,3,4,5];
+	a[2] = 666;
+	print(a[2]);
 	return 0;
 }

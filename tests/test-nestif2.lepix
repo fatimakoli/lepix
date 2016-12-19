@@ -1,0 +1,14 @@
+fun main():int {
+	var x:int = 7;
+
+	if(x > 3) {
+		print(42);
+		if(x < 10) {
+			print(21);
+		}
+		else {
+			print(60);
+		}
+	}
+	return 0;
+}

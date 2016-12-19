@@ -1,0 +1,8 @@
+fun main(): int {
+	var sum:int;
+	var i:int;
+	for(i=0; i<10; i=i+1) {
+		sum = sum + i; /* adding to sum before initializing */
+	}
+	return 0;
+}

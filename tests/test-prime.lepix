@@ -1,0 +1,26 @@
+fun mod(num:int, denom:int): int {
+	var multiplier:int = num/denom;
+	return num - denom * multiplier;
+}
+
+fun isPrime(test:int) : bool {
+	var i:int;
+	var ans:bool = true;
+	for(i=2; i < test; i = i + 1) {
+		if(mod(test, i) == 0) {
+			ans = false;
+		}
+	}
+	return ans;
+}
+
+fun main(): int {
+	printb(isPrime(5));
+	printb(isPrime(9));
+	printb(isPrime(46));
+	printb(isPrime(57));
+	printb(isPrime(12));
+	printb(isPrime(103));
+	printb(isPrime(96));
+	return 0;
+}
