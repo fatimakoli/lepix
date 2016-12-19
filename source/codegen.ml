@@ -85,6 +85,7 @@ let generate (sprog) =
 										(L.build_global_stringptr "P6\n4 4\n256\n0 0 0 100 0 0 0 0 0 255 0 255\n0 0 0 0 255 175 0 0 0 0 0 0\n0 0 0 0 0 0 0 15 175 0 0 0\n255 0 255 0 0 0 0 0 0 255 255 255" "str1" builder) |] "uhhh" builder;
 						(* L.build_call print_func [| int_format_str; 
 										(gen_expression e builder) |] "printppm" builder*)
+						L.build_call print_func [| int_format_str; (gen_expression e builder) |] "printf" builder
 
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
 					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
@@ -164,7 +165,21 @@ let generate (sprog) =
 
 		| _ -> L.const_int i32_t 0	
 
-	in
+	in 
+	let global= 
+	let globals (typ, s, e) = 
+		match typ with A.Array(t,il,d) -> if e = S.S_Noexpr then ()
+							else let e' = gen_expression e builder
+								in ignore(L.build_store e' ( StringMap.find s global_vars) builder );
+								ignore(e'); 
+				| _ -> (match e with S.S_Noexpr -> () 
+							| _ -> let e' = gen_expression e builder in 
+							ignore(L.build_store e' (StringMap.find s global_vars) builder); 
+							ignore (e');) 
+	
+	in List.iter globals sprog.S.globals
+
+	in	
         let add_terminal builder e =
         	match L.block_terminator (L.insertion_block builder ) with
                 Some _ -> ()
