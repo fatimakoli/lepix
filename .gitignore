@@ -6,8 +6,10 @@
 *.swp
 *.out
 !tests/*.out
+!tests_fix/*.out
 *.err
 !tests/*.err
+!tests_fix/*.err
 *.ll
 !examples/*.ll
 *.gz
