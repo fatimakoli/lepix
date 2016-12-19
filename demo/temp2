@@ -1,4 +1,0 @@
-fun main() : int
-{
-	var img : int[132] = 
-
