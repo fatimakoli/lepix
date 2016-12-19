@@ -1,0 +1,4 @@
+Stored value type does not match pointer operand type!
+  store [3 x i32] [i32 5, i32 3, i32 -3], [4 x i32]* %arr
+ [4 x i32]Broken module found, compilation aborted!
+Aborted (core dumped)
