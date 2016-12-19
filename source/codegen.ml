@@ -11,7 +11,7 @@ let generate (sprog) =
 	and f32_t   = L.float_type   context
 (*	and f64_t   = L.double_type  context *)
 	and i8_t    = L.i8_type      context
-(*	and char_t  = L.i8_type      context *)
+	and char_t  = L.i8_type      context 
 	and i32_t   = L.i32_type     context
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
@@ -76,8 +76,13 @@ let generate (sprog) =
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
 		| S.S_Call("printb",[e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
-		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "fmt" builder) ; 
+		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "floatfmt" builder) ; 
 										(gen_expression e builder) |] "printf" builder
+		| S.S_Call("printppm", [e], typ) -> L.build_call print_func [| (L.build_global_stringptr "%s\n" "charfmt" builder); 
+										(L.build_global_stringptr "P6\n4 4\n256\n0 0 0 100 0 0 0 0 0 255 0 255\n0 0 0 0 255 175 0 0 0 0 0 0\n0 0 0 0 0 0 0 15 175 0 0 0\n255 0 255 0 0 0 0 0 0 255 255 255" "str1" builder) |] "uhhh" builder;
+						(* L.build_call print_func [| int_format_str; 
+										(gen_expression e builder) |] "printppm" builder*)
+
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
 					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
