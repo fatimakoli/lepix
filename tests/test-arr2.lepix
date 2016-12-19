@@ -6,12 +6,15 @@ fun main(): int
 	arr[2] = 1;
 	arr[3] = -4;
 
-	var sum : int;
+	var sum : int=0;
 
 	var i:int;
 	for(i = 0; i<4; i=i+1)
 	{
-		print(arr[i]);
+		sum = sum + arr[i];
 	}
+
+	print(sum);
+	
 	return 0;
 }
