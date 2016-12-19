@@ -1,6 +1,6 @@
 fun main() : int
 {
-	var a : int[5] = [1,2,3,4,5];
-	print(a[3]);
+	var a : float = 5.0;
+	var b : float = a - 4.0;
 	return 0;
 }
