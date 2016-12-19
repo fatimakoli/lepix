@@ -22,6 +22,8 @@ RED="\033[0;31m"
 GREEN="\033[0;32m"
 NC="\033[0m" # No Color
 
+size=0
+
 globallog=testall.log
 rm -f $globallog
 error=0
@@ -38,7 +40,11 @@ Usage() {
 
 SignalError() {
     if [ $error -eq 0 ] ; then
-	echo "\t\t${RED}(ಥ_ಥ)${NC}"
+    if [ $size -eq 2 ] ; then
+        echo "\t${RED}(ಥ_ಥ)${NC}"
+    else
+        echo "\t\t${RED}(ಥ_ಥ)${NC}"
+    fi
 	error=1
     fi
     echo "  $1"
