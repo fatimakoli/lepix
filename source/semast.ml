@@ -6,7 +6,7 @@ type s_expr =
 |	S_FloatLit of float
 |	S_Id of string * typ
 |	S_Call of string * s_expr list * typ
-|	S_Access of string * s_expr list * typ
+|	S_Access of string * s_expr list * typ * typ
 |	S_Binop of s_expr * op * s_expr * typ
 |	S_Unop of uop * s_expr * typ
 |	S_Assign of string * s_expr * typ
