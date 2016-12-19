@@ -280,7 +280,7 @@ let create_environment =
 			 };
 			{ Semast.func_return_type = Void;
 			  Semast.func_name = "printppm";
-			  Semast.func_parameters = [(Array(Int,[1],1),"a")];
+			  Semast.func_parameters = [(Int,"a")];
 			  Semast.func_body = [];
 			  Semast.func_locals = [];
 			};		  
