@@ -1,0 +1,4 @@
+fun main(): int {
+	printf(--42.0);
+	return 0;
+}

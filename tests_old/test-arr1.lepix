@@ -11,7 +11,7 @@ fun main(): int
 	var i:int;
 	for(i = 0; i<4; i=i+1)
 	{
-		lib.print(arr[i]);
+		print(arr[i]);
 	}
 	return 0;
 }
