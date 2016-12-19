@@ -9,7 +9,7 @@ let generate (sprog) =
 	let context = L.global_context () in
 	let _le_module = L.create_module context "Lepix"
 	and f32_t   = L.float_type   context
-(*	and f64_t   = L.double_type  context *)
+	and f64_t   = L.double_type  context
 	and i8_t    = L.i8_type      context
 (*	and char_t  = L.i8_type      context *) 
 	and i32_t   = L.i32_type     context
@@ -76,8 +76,10 @@ let generate (sprog) =
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
 		| S.S_Call("printb",[e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
-		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "floatfmt" builder) ; 
-										(gen_expression e builder) |] "printf" builder
+		| S.S_Call("printf",[e],typ) -> let gen= gen_expression e builder in
+						let double = L.build_fpext gen f64_t "dou" builder in
+						 L.build_call print_func [| (L.build_global_stringptr "%.2f\n" "floatfmt" builder) ; 
+										double |] "else" builder
 		| S.S_Call("printppm", [e], typ) -> L.build_call print_func [| (L.build_global_stringptr "%s\n" "charfmt" builder); 
 										(L.build_global_stringptr "P6\n4 4\n256\n0 0 0 100 0 0 0 0 0 255 0 255\n0 0 0 0 255 175 0 0 0 0 0 0\n0 0 0 0 0 0 0 15 175 0 0 0\n255 0 255 0 0 0 0 0 0 255 255 255" "str1" builder) |] "uhhh" builder;
 						(* L.build_call print_func [| int_format_str; 
