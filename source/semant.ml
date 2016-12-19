@@ -256,7 +256,14 @@ let create_environment =
 			   Semast.func_parameters = [(Float,"a")];
 			   Semast.func_body = [];
 			   Semast.func_locals = [];
-			 };]  
+			 };
+			{  Semast.func_return_type = Int;
+			  Semast.func_name = "printppm";
+			  Semast.func_parameters = [(Int,"a")];
+			  Semast.func_body = [];
+			  Semast.func_locals = [];
+			};
+			]  
 
 	in
         let new_scope = { parent_scope = None; vars = [];} in
