@@ -1,0 +1,6 @@
+fun main() : int
+{
+	var a : float = 4.5;
+	printf(a);
+	return 0;
+}

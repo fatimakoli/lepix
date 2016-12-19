@@ -204,7 +204,8 @@ and check_var_decl name typ e env =
         if List.exists (fun (_,vname) -> vname = name) env.scope.vars
         then raise(SemanticException("Variable has already been declared"))
         else 
-		match typ with Array(t,il,d) -> S_VarDecStmt(S_VarDecl((name,typ),sexpr))
+		match typ with Array(t,il,d) -> env.scope.vars <- (typ,name)::env.scope.vars;
+						S_VarDecStmt(S_VarDecl((name,typ),sexpr))
 			       | _ -> 
 					if sexpr_typ <> typ && sexpr_typ <> Void 
 						then raise(SemanticException("Invalid type assigned in declaration"))
