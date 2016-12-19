@@ -8,10 +8,13 @@ fun main(): int
 
 	var sum : int;
 
-	for( var i = 0 to 4 )
+	var i:int;
+	for(i = 0; i<4; i=i+1)
 	{
 		sum = sum + arr[i];
 	}
 
-	lib.print(sum)
+	print(sum);
+	
+	return 0;
 }

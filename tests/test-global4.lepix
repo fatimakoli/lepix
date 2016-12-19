@@ -1,0 +1,12 @@
+var i:int = 10;
+
+fun foo(): int {
+	var i:int = 42; /* local i, should ignore global i */
+	return i;
+}
+
+fun main(): int {
+	print(i);
+	print(foo());
+	return 0;
+}

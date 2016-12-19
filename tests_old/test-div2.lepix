@@ -1,6 +1,6 @@
 fun main(): int {
 	var x:float = 301.0;
 	var y:float = x/3.0;
-	print(y);
+	printf(y);
 	return 0;
 }

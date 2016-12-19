@@ -55,7 +55,6 @@ Compare() {
     echo "=========="
     echo "EXPECTED OUTPUT:"
     cat $2
-    echo ""
     echo "=========="
     echo "ACTUAL OUTPUT:"
     cat $1

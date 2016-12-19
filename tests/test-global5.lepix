@@ -1,0 +1,15 @@
+var i:bool = false;
+
+fun foo(a:int): void  {
+	var i:bool = true; /* local i, should ignore global i */
+	if(i) {
+		printb(i);
+		print(a);
+	}
+}
+
+fun main(): int {
+	printb(i);
+	foo(42);
+	return 0;
+}

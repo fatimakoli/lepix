@@ -1,0 +1,12 @@
+
+
+fun foo(): float  {
+	var i:float = 6.5; /* local i, should ignore global i */
+	return i;
+}
+
+fun main(): int {
+	var i:float = 1.5;
+	printf(i);
+	return 0;
+}

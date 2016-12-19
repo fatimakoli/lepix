@@ -1,0 +1,1 @@
+Fatal error: exception Semant.SemanticException("For loop second expr not of type bool")
