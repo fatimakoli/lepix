@@ -49,7 +49,7 @@ def make_cake():
             numlist = [str(item) for item in numlist]
             numlist = ', '.join(numlist)
             rows.append(numlist)
-        lepix1darr += ', \n'.join(rows)
+        lepix1darr += ', '.join(rows)
         lepix1darr += ' ]'
 
     outfile.write(lepix1darr)

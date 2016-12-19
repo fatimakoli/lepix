@@ -74,8 +74,8 @@ expr:
 | expr EQ expr { Binop( $1, Equal, $3) }
 | expr AND expr { Binop( $1, And, $3) }
 | expr OR expr { Binop( $1, Or, $3) }
-| ID ASSIGN expr { Assign($1, $3) }
-| ID LSQUARE args_list RSQUARE ASSIGN expr { ArrayAssign($1,$3,$6) }
+| ID ASSIGN expr { Assign($1,$3) }
+| ID LSQUARE args_list RSQUARE ASSIGN expr { ArrayAssign($1,List.rev $3,$6) }
 
 params_list: { [] }
 | ID COLON type_name { [($1,$3)] }
