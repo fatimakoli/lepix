@@ -1,0 +1,17 @@
+fun main():int {
+	var i:int = 0;
+	var x:int = 7;
+
+	for(i;i < 10;i = i + 1) {
+		if(x > 3) {
+			print(42);
+			if(x < 4) {
+				print(21);
+			}
+			else {
+				print(60);
+			}
+		}
+	}
+	return 0;
+}

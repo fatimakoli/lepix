@@ -1,0 +1,28 @@
+fun main() : int 
+{
+  printf(1.5 + 2.5);
+  printf(1.0 - 2.0);
+  printf(1.0 * 2.0);
+  printf(100.0 / 2.0);
+  printf(99.0);
+  printb(1.0 == 2.0);
+  printb(1.0 == 1.0);
+  printf(99.0);
+  printb(1.0 != 2.0);
+  printb(1.0 != 1.0);
+  printf(99.0);
+  printb(1.0 < 2.0);
+  printb(2.0 < 1.0);
+  printf(99.0);
+  printb(1.0 <= 2.0);
+  printb(1.0 <= 1.0);
+  printb(2.0 <= 1.0);
+  printf(99.0);
+  printb(1.0 > 2.0);
+  printb(2.0 > 1.0);
+  printf(99.0);
+  printb(1.0 >= 2.0);
+  printb(1.0 >= 1.0);
+  printb(2.0 >= 1.0); 
+  return 0;
+}

@@ -1,0 +1,9 @@
+fun sqrt_int(a:int): float {
+	var x:float = 0.0;
+
+	return x;
+}
+fun main(): int {
+	var x:float = 5.5;
+	return 0;
+}
