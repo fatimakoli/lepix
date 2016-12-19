@@ -191,15 +191,28 @@ and check_while e sl env =
 	if sexpr_typ <> Bool then raise(SemanticException("While condition has invalid type"))
 	else S_While(sexpr,s)
 
+and check_array_var_decl name t il d e etype env = 
+	if etype = t then 
+		if d = List.length then
+			S_VarDecStmt(S_VarDecl((name,t),e))
+		else raise(SemanticException("Array literal size is incorrect"))
+	else raise(SemanticException("Array literal has wrong type in assignment"))
+
 and check_var_decl name typ e env =
         let sexpr = check_expr e env in
         let sexpr_typ = get_expr_type sexpr in 
         if List.exists (fun (_,vname) -> vname = name) env.scope.vars
         then raise(SemanticException("Variable has already been declared"))
         else 
-	if sexpr_typ <> typ && sexpr_typ <> Void then raise(SemanticException("Invalid type assigned in declaration"))
-	else if typ = Void then raise(SemanticException("Cannot have var of type void")) 
-        else env.scope.vars <- (typ,name)::env.scope.vars; S_VarDecStmt(S_VarDecl((name,typ),sexpr))
+		match typ with Array(t,il,d) -> S_VarDecStmt(S_VarDecl((name,typ),sexpr))
+			       | _ -> 
+					if sexpr_typ <> typ && sexpr_typ <> Void 
+						then raise(SemanticException("Invalid type assigned in declaration"))
+					else 
+						if typ = Void 
+						then raise(SemanticException("Cannot have var of type void")) 
+        					else env.scope.vars <- (typ,name)::env.scope.vars; 
+									S_VarDecStmt(S_VarDecl((name,typ),sexpr))
 
 let check_func_decl (fdecl : Ast.func_decl) env =	
 	if env.in_function_body then

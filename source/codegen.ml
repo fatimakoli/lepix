@@ -11,7 +11,7 @@ let generate (sprog) =
 	and f32_t   = L.float_type   context
 (*	and f64_t   = L.double_type  context *)
 	and i8_t    = L.i8_type      context
-(*	and char_t  = L.i8_type      context *)
+	and char_t  = L.i8_type      context 
 	and i32_t   = L.i32_type     context
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
@@ -76,14 +76,21 @@ let generate (sprog) =
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
 		| S.S_Call("printb",[e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
-		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "fmt" builder) ; 
+		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "floatfmt" builder) ; 
 										(gen_expression e builder) |] "printf" builder
+		| S.S_Call("printppm", [e], typ) -> L.build_call print_func [| (L.build_global_stringptr "%s\n" "charfmt" builder); 
+										(L.build_global_stringptr "P6\n4 4\n256\n0 0 0 100 0 0 0 0 0 255 0 255\n0 0 0 0 255 175 0 0 0 0 0 0\n0 0 0 0 0 0 0 15 175 0 0 0\n255 0 255 0 0 0 0 0 0 255 255 255" "str1" builder) |] "uhhh" builder;
+						(* L.build_call print_func [| int_format_str; 
+										(gen_expression e builder) |] "printppm" builder*)
+
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
 					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""
 											| _ -> e ^ "_result")
 				          in L.build_call fcode (Array.of_list actuals) result builder
-	
+		| S.S_ArrayLit(el,typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list (List.map (fun x -> 
+											gen_expression x builder) el))
+													
 		| S.S_Access(s, el,typ) ->
 			let index = gen_expression (List.hd el) builder in
 			let arr = gen_expression (S.S_Id(s,typ)) builder in
@@ -219,7 +226,10 @@ let generate (sprog) =
                 | S.S_Continue -> builder
 			   	
 		| S.S_VarDecStmt(S.S_VarDecl((name,typ),sexpr)) -> 
-								match typ with A.Array(t,il,d) -> builder	
+								match typ with A.Array(t,il,d) -> 
+									let e' = gen_expression sexpr builder
+									in ignore(L.build_store e' (lookup name) builder );
+									ignore(e'); builder 
 								| _ -> (match sexpr with S.S_Noexpr -> builder  
 									| _ -> let e' = gen_expression sexpr builder in 
 									ignore(L.build_store e' (lookup name) builder); 
