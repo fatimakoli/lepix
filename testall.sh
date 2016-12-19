@@ -221,6 +221,6 @@ done
 if [ $globalerror -eq 0 ] ; then
     echo "\n${GREEN}(⌐■_■)${NC}"
 else
-    echo "\n${RED}( ∙_∙)>⌐■-■ ${NC}"
+    echo "\n${RED}( ಠ_ಠ)>⌐■-■${NC}"
 fi
 exit $globalerror
