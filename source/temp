@@ -1,6 +1,14 @@
+fun sqrt(a:int): float {
+	var x:float = 0.0;
+	if(a > 0) {
+		x = 1.0;
+	}
+	
+	return x;
+}
+ 
 fun main() : int
 {
-	var a : float = 5.0;
-	var b : float = a - 4.0;
+	printf(sqrt(4));
 	return 0;
 }
