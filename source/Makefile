@@ -1,3 +1,8 @@
+.PHONY : rebuild lepix clean
+
+#Clean and Build
+rebuild: clean lepix
+
 #Build top level lepix executable
 lepix :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis lepix.native
