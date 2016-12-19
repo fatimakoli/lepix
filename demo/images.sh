@@ -1,14 +1,5 @@
 #!/bin/sh
 
-# Regression testing script for LePiX
-# Step through a list of files
-#  Compile, run, and check the output of each expected-to-work test
-#  Compile and check the error of each expected-to-fail test
-
-# Path to the LLVM interpreter
-LLI="lli"
-#!/bin/sh
-
 ../source/lepix.native <greyscale.lepix> greyscale.ll
 lli greyscale.ll > output/greyscale.ppm
 echo "greyscale finished"
@@ -47,7 +38,7 @@ echo "flip finished"
 
 ../source/lepix.native <blur.lepix> blur.ll
 lli blur.ll > output/blur.ppm
-echo "flip finished"
+echo "blur finished"
 
 ../source/lepix.native <extremecontrast.lepix> extremecontrast.ll
 lli extremecontrast.ll > output/extremecontrast.ppm

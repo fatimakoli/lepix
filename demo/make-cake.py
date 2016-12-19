@@ -19,7 +19,7 @@ def make_cake():
     # opens image file to be edited and creates new image file where
     # lepix array literal is saved
     infile = open(sys.argv[1], 'r')
-    outfile = open("lepix1darr.txt", 'w')
+    outfile = open(sys.argv[2], 'w')
     buffer = [] # buffer array
 
     
@@ -38,8 +38,7 @@ def make_cake():
     # runs program if image width is less than or equal to max buffer length
     if columns*3 <= BUFFERMAX: 
         
-        lepix1darr = '[ '
-        lepix2darr = '[ '
+        lepix1darr = 'fun main() : int { \n var img : int[15552] = [ '
         rows = []
         # reads original image file line by line
         for line in infile:
@@ -51,7 +50,7 @@ def make_cake():
             numlist = ', '.join(numlist)
             rows.append(numlist)
         lepix1darr += ', '.join(rows)
-        lepix1darr += ' ]'
+        lepix1darr += ' ]; \n'
 
     outfile.write(lepix1darr)
 
