@@ -82,7 +82,7 @@ let generate (sprog) =
 						 L.build_call print_func [| (L.build_global_stringptr "%.2f\n" "floatfmt" builder) ; 
 										double |] "else" builder
 		| S.S_Call("printppm", [e], typ) -> L.build_call print_func [| (L.build_global_stringptr "%s\n" "charfmt" builder); 
-										(L.build_global_stringptr "P3\n4 4\n256" "str1" builder) |] "uhhh" builder;
+										(L.build_global_stringptr "P3\n8 8\n255" "str1" builder) |] "uhhh" builder;
 						(* L.build_call print_func [| int_format_str; 
 										(gen_expression e builder) |] "printppm" builder*)
 					(*	L.build_call print_func [| int_format_str; (gen_expression e builder) |] "printf" builder*)
