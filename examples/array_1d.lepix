@@ -1,4 +1,5 @@
 fun main () : int {
 	var x : int[5] = [ 11, 22, 44, 66, 88 ];
-	x[3] = 7;
+	print(x[3]);
+	return 0;
 }

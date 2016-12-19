@@ -36,7 +36,7 @@ let get_expr_type sexpr =
 	| S_FloatLit(f) -> Float
 	| S_Id(s,typ) -> typ 
 	| S_Call(s,el,typ) -> typ
-	| S_Access(s,el,typ) -> typ
+	| S_Access(s,el,typ,dims) -> typ
 	| S_Binop(l,op,r,typ) -> typ
 	| S_Unop(op,e,typ) -> typ
 	| S_Assign(s,e,typ) -> typ
@@ -98,7 +98,7 @@ and check_expr_list el typ env =
 and check_access s el env = 
 	let (typ,name) = find_variable env.scope s and
 	sexpr_list = check_expr_list el Int env in
-	match typ with Ast.Array(t,il,d) -> S_Access(s,sexpr_list,t)
+	match typ with Ast.Array(t,il,d) -> S_Access(s,sexpr_list,t,typ)
 	| _ -> raise(SemanticException("Attempting array access in non-array"))
 and create_sexpr_list el env =
 	match el with  [] -> []

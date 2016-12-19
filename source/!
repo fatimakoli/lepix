@@ -1,0 +1,5 @@
+fun main() : int 
+{
+  var a : int;
+    return 0;
+}
