@@ -97,6 +97,8 @@ Check() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
+    size=`echo $((${#basename} + 4))`
+    size=`echo $(($size/8))`
 
     echo 1>&2
     echo "###### Testing $basename" 1>&2
@@ -114,7 +116,11 @@ Check() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "\t\t${GREEN}(•◡•)${NC}"
+	if [ $size -eq 2 ] ; then
+        echo "\t${GREEN}(•◡•)${NC}"
+    else
+        echo "\t\t${GREEN}(•◡•)${NC}"
+    fi
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2
@@ -131,6 +137,8 @@ CheckFail() {
     basedir="`echo $1 | sed 's/\/[^\/]*$//'`/."
 
     echo -n "$basename..."
+    size=`echo $((${#basename} + 4))`
+    size=`echo $(($size/8))`
 
     echo 1>&2
     echo "###### Testing $basename" 1>&2
@@ -148,7 +156,11 @@ CheckFail() {
 	if [ $keep -eq 0 ] ; then
 	    rm -f $generatedfiles
 	fi
-	echo "\t\t${GREEN}(•◡•)${NC}"
+    if [ $size -eq 2 ] ; then
+        echo "\t${GREEN}(•◡•)${NC}"
+    else
+        echo "\t\t${GREEN}(•◡•)${NC}"
+    fi
 	echo "###### SUCCESS" 1>&2
     else
 	echo "###### FAILED" 1>&2

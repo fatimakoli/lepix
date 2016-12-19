@@ -16,17 +16,7 @@ let generate (sprog) =
 (*	and i64_t   = L.i64_type     context *)
 	and bool_t  = L.i1_type      context
 	and void_t  = L.void_type    context in
-	let get_arr_sz arr = 
-		match arr with A.Array(t,il,d) -> (let sz = match d with 1 -> (List.nth il 0)
-                                                             | 2 -> (List.nth il 1) * (List.nth il 1)
-                                                             | 3 -> (List.nth il 2) * (List.nth il 1) * (List.nth il 0)
-                                                             | _ -> raise(CodegenError("Too many dimensions"))
-						in sz)
 
-						| _ -> raise(CodegenError("Cannot find array size for non-array"))
-                                                	      
-        in
-	
 	let rec ast_to_llvm_type = function
 		| A.Bool -> bool_t
 		| A.Int -> i32_t
@@ -66,13 +56,7 @@ let generate (sprog) =
 		ignore (L.build_store p local builder);
 		StringMap.add name local map in
 		
-		let rec add_local map (name,typ,e) = match typ with A.Array(t,il,d) -> map
-								 (* let size = get_arr_sz typ in
-								  let atype = ast_to_llvm_type t in
-								  let arr = L.build_array_malloc atype  "tmp" builder in
-								  let arr = L.build_pointercast arr (pointer_type atype) "tmp" builder in
-								  StringMap.add name arr map *)
-				|_ -> let local_var = L.build_alloca (ast_to_llvm_type typ) name builder in		
+		let rec add_local map (name,typ,e) = let local_var = L.build_alloca (ast_to_llvm_type typ) name builder in		
 							StringMap.add name local_var map
 		in
                 let params_list = List.map (fun (s,t) -> (t,s)) fdecl.S.func_parameters
@@ -91,6 +75,9 @@ let generate (sprog) =
 		| S.S_IntLit(value) -> L.const_int i32_t value
 		| S.S_FloatLit(value) -> L.const_float f32_t value
 		| S.S_Call("print", [e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
+		| S.S_Call("printb",[e], typ) -> L.build_call print_func [| int_format_str ; (gen_expression e builder) |] "printf" builder
+		| S.S_Call("printf",[e],typ) -> L.build_call print_func [| (L.build_global_stringptr "%f\n" "fmt" builder) ; 
+										(gen_expression e builder) |] "printf" builder
 		| S.S_Call(e, el,typ) -> let (fcode,fdecl) = StringMap.find e function_decls in
 					 let actuals = List.rev (List.map (fun s -> gen_expression s builder) (List.rev el) )in
 					 let result = (match fdecl.S.func_return_type with A.Void -> ""

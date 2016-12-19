@@ -1,13 +1,16 @@
-fun printem(a:int, b:int, c:int, d:int): void
+fun main() : int
 {
-  print(a);
-  print(b);
-  print(c);
-  print(d);
+	var a : int[5];
+	return 0;
 }
 
-fun main(): int
-{
-  printem(42,17,192,8);
-  return 0;
-}
+
+
+
+
+
+
+
+
+
+
