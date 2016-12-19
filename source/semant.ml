@@ -27,8 +27,14 @@ let rec find_variable scope name =
 
 let rec list_compare l1 l2 = 
 	match (l1,l2) with ([],[]) -> true
+	| ((Array(_,_,_),_)::tl1 , (Array(_,_,_),_)::tl2) -> true
 	| (hd1::tl1 , hd2::tl2) -> if hd1 = hd2 then list_compare tl1 tl2 else false
 	| _ -> false
+
+let rec list_compare_typ l1 l2 =
+	match (l1,l2) with ([],[]) -> true
+	| (hd1::tl1 , hd2::tl2) -> if hd1 = hd2 then list_compare_typ tl1 tl2 else false
+        | _ -> false
 
 let get_expr_type sexpr = 
 	match sexpr with S_IntLit(i) -> Int
@@ -40,7 +46,7 @@ let get_expr_type sexpr =
 	| S_Binop(l,op,r,typ) -> typ
 	| S_Unop(op,e,typ) -> typ
 	| S_Assign(s,e,typ) -> typ
-	| S_ArrayAssign(s,el,e,typ) -> typ
+	| S_ArrayAssign(s,el,e,typ,atyp) -> typ
 	| S_ArrayLit(el,typ) -> typ
 	| S_InitArray(s,el,typ) -> typ
 	| S_Noexpr -> Void
@@ -111,7 +117,7 @@ and find_function env fname el =
                 let found = List.find ( fun f -> f.func_name = fname ) env.funcs in
                 let formals_types = List.map fst found.func_parameters in
                 if List.length args_types_call = List.length formals_types
-                then (if list_compare args_types_call formals_types 
+                then (if list_compare_typ args_types_call formals_types 
 		      then found 
 		      else raise(SemanticException("Incompatible args to func")))
                 else raise(SemanticException("Wrong num of args to func"))
@@ -124,7 +130,8 @@ and check_array_assign s el e env =
 	let sexpr_index = check_expr_list el Int env and
 	sexpr_assign = check_expr e env	in
 	let assgn_type = get_expr_type sexpr_assign in
-	if assgn_type = atype then S_ArrayAssign(s,sexpr_index,sexpr_assign,assgn_type) 
+	let arr_prim_type = match atype with Array(t,il,d) -> t | _ -> raise(SemanticException("Accessing non array")) in
+	if assgn_type = arr_prim_type then S_ArrayAssign(s,sexpr_index,sexpr_assign,assgn_type,atype) 
 	else raise(SemanticException("Invalid type in array assign"))
 and check_init_array s el env = 
 	let (atype,name) = find_variable env.scope s in 
@@ -271,12 +278,12 @@ let create_environment =
 			   Semast.func_body = [];
 			   Semast.func_locals = [];
 			 };
-			{  Semast.func_return_type = Int;
+			{ Semast.func_return_type = Void;
 			  Semast.func_name = "printppm";
-			  Semast.func_parameters = [(Int,"a")];
+			  Semast.func_parameters = [(Array(Int,[1],1),"a")];
 			  Semast.func_body = [];
 			  Semast.func_locals = [];
-			};
+			};		  
 			]  
 
 	in

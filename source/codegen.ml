@@ -151,8 +151,25 @@ let generate (sprog) =
 			) exp "tmp" builder
 		| S.S_Assign(s, e, typ) -> let e' = gen_expression e builder in ignore(L.build_store e' (lookup s) builder); e'
 							
-		| S.S_ArrayAssign(s, e1, e2, typ) ->
-			L.const_int i32_t 0			
+		| S.S_ArrayAssign(s, el, e2, typ,A.Array(t,il,d)) -> (match d with 1 ->  let index = gen_expression (List.hd el) builder in
+                                                                 let index = L.build_add index (L.const_int i32_t 0) "tmp" builder in
+                                                                  let value = L.build_gep (lookup s)
+                                                                  [| (L.const_int i32_t 0); index; |] "tmp" builder
+                                                                 in L.build_store (gen_expression e2 builder) value builder 
+
+                                                        | 2 -> let indexlist = List.map (fun x -> gen_expression x builder) el in
+                                                                let index = L.build_add (L.const_int i32_t 0)
+                                                                                        (List.nth indexlist 1) "tmp" builder in
+                                                                let rows = L.build_mul (List.nth indexlist 0)  (L.const_int i32_t
+                                                                                                        (List.nth il 1)) "tmp2" builder
+                                                                in let index = L.build_add index rows "tmp" builder in
+                                                                 let value = L.build_gep (lookup s)
+                                                                  [| (L.const_int i32_t 0); index |] "tmp" builder
+                                                                 in L.build_store (gen_expression e2 builder) value builder
+
+                                                        | _ -> raise(CodegenError("Invalid dim number"))
+ 
+						 	)			
 
 		| S.S_ArrayLit(el, typ) -> L.const_array (ast_to_llvm_type typ) (Array.of_list 
 								(List.map (fun x-> gen_expression x builder) el))

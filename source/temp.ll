@@ -6,11 +6,13 @@ declare i32 @printf(i8*, ...)
 
 define i32 @main() {
 entry:
-  %a = alloca float
-  store float 2.000000e+00, float* %a
-  %a1 = load float* %a
-  %tmp = fsub float %a1, 3.000000e+00
-  store float %tmp, float* %a
+  %a = alloca [5 x i32]
+  store [5 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5], [5 x i32]* %a
+  %tmp = getelementptr [5 x i32]* %a, i32 0, i32 2
+  store i32 666, i32* %tmp
+  %tmp1 = getelementptr [5 x i32]* %a, i32 0, i32 2
+  %tmp2 = load i32* %tmp1
+  %printf = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @fmt, i32 0, i32 0), i32 %tmp2)
   ret i32 0
 }
 
