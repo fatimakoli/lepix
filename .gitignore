@@ -28,3 +28,4 @@ examples/.vs/
 *.sln
 *.vcxproj
 *.filters
+*.DS_Store
