@@ -1,4 +1,6 @@
-# lepix
+# LèPix
+
+Ceci n’est pas le Photoshop
 
 The classy image editing language.
 
