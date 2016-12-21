@@ -1,7 +1,0 @@
-fun main() : int
-{
-	var a : float = 4.5;
-	if(a > 0)
-		print(2);
-	return 0;
-}
