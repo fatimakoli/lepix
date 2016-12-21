@@ -1,5 +1,0 @@
-fun main () : int {
-	var x : int[5] = [ 11, 22, 44, 66, 88 ];
-	print(x[3]);
-	return 0;
-}

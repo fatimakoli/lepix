@@ -1,5 +1,0 @@
-var x : int = 7;
-fun main() : int {
-	print(x);
-	return 0;
-}

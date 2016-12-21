@@ -3,7 +3,6 @@
 mkdir output
 files="*.lepix"
 
-
 for file in $files
 do
     basename=`echo $file | sed 's/.*\\///

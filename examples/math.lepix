@@ -1,3 +1,0 @@
-fun main () : int {
-	lib.print((24 + 18 * 2 / 6) % 32);
-}
