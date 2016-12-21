@@ -9,16 +9,16 @@ The classy image editing language.
 
 Development environment:
 
-Lepix was developed and tested on Ubuntu 14.04 with llvm 3.4
+LèPix was developed and tested on Ubuntu 14.04 with LLVM 3.4
 
 
 Usage:
 
-1. Run 'make lepix' in the source folder
+1. Run `make lepix` in the source folder
 
-2. Run './lepix.native <  program-file-path  > output-ll-file-path'
+2. Run `./lepix.native <  program-file-path  > output-ll-file-path`
 
-3. Run lli 'output-ll-file-path'
+3. Run lli `output-ll-file-path`
 
 
 
