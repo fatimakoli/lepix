@@ -7,12 +7,12 @@ The classy image editing language.
 ![Travis Build Status](https://travis-ci.com/gabriellet/lepix.svg?token=qpUy9zbFgqX9q8zxK54p&branch=master)
 
 
-Development environment:
+### Development environment:
 
 LèPix was developed and tested on Ubuntu 14.04 with LLVM 3.4
 
 
-Usage:
+### Usage:
 
 1. Run `make lepix` in the source folder
 
