@@ -27,6 +27,8 @@ def make_cake():
     infile.readline()
     # saves the dimensions of the image from the second line of the header 
     dimensions = infile.readline()
+    if "#" in dimensions:
+        dimensions = infile.readline()
     # saves the max intensity of the image from the third line of the header
     max_intensity = infile.readline()
 
@@ -34,11 +36,12 @@ def make_cake():
     # splits dimensions to obtain the number of columns
     dimensionslist = dimensions.split()
     columns = int(dimensionslist[0])
+    size = int(dimensionslist[0]) * int(dimensionslist[1]) * 3
     
     # runs program if image width is less than or equal to max buffer length
     if columns*3 <= BUFFERMAX: 
         
-        lepix1darr = 'fun main() : int { \n var img : int[15552] = [ '
+        lepix1darr = 'fun main() : int { \n var img : int['+ str(size) +'] = [ '
         rows = []
         # reads original image file line by line
         for line in infile:
