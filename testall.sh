@@ -1,13 +1,14 @@
 #!/bin/sh
 
-# Regression testing script for LePiX
+# LePiX Regression testing script
+# based on testall.sh for MicroC by Stephen Edwards
+
 # Step through a list of files
 #  Compile, run, and check the output of each expected-to-work test
 #  Compile and check the error of each expected-to-fail test
 
 # Path to the LLVM interpreter
 LLI="lli"
-# LLI="/usr/local/opt/llvm35/bin/lli-3.5"
 
 # Path to the lepix compiler.  Usually "./lepix.native"
 # Try "_build/lepix.native" if ocamlbuild was unable to create a symbolic link.
@@ -22,6 +23,7 @@ RED="\033[0;31m"
 GREEN="\033[0;32m"
 NC="\033[0m" # No Color
 
+# To align status messages
 size=0
 
 globallog=testall.log
@@ -53,7 +55,6 @@ SignalError() {
 # Compare <outfile> <reffile> <difffile>
 # Compares the outfile with reffile.  Differences, if any, written to difffile
 Compare() {
-    # echo "in compare"
     generatedfiles="$generatedfiles $3"
     echo diff -b $1 $2 ">" $3 1>&2
     diff -b "$1" "$2" > "$3" 2>&1 || {
@@ -73,7 +74,6 @@ Compare() {
 # Run <args>
 # Report the command, run it, and report any errors
 Run() {
-    # echo "in run"
     echo $* 1>&2
     eval $* || {
 	SignalError "$1 failed on $*"
@@ -84,7 +84,6 @@ Run() {
 # RunFail <args>
 # Report the command, run it, and expect an error
 RunFail() {
-    # echo "in runfail"
     echo $* 1>&2
     eval $* && {
 	SignalError "failed: $* did not report an error"
@@ -94,7 +93,6 @@ RunFail() {
 }
 
 Check() {
-    # echo "in check"
     error=0
     basename=`echo $1 | sed 's/.*\\///
                              s/.lepix//'`
@@ -151,7 +149,6 @@ CheckFail() {
     generatedfiles=""
 
     generatedfiles="$generatedfiles ${basename}.err ${basename}.diff" &&
-    # generatedfiles="$generatedfiles ${basename}.diff" &&
     RunFail "$LEPIX" "<" $1 "2>" "${basename}.err" ">>" $globallog &&
     Compare ${basename}.err ${reffile}.err ${basename}.diff
 
